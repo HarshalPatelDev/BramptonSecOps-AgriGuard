@@ -1,4 +1,61 @@
 const STORAGE_KEY = 'agriguard-risk-planner-assets-v1';
+const DISPATCH_STORAGE_KEY = 'agriguard-dispatch-v1';
+const INCIDENT_STORAGE_KEY = 'agriguard-incidents-v1';
+const NODE_STORAGE_KEY = 'agriguard-network-nodes-v1';
+const VENDOR_STORAGE_KEY = 'agriguard-vendors-v1';
+const NETWORK_ZONES = ['Cloud / SaaS', 'Perimeter / DMZ', 'Internal network', 'Restricted data zone', 'Remote / user devices', 'Not sure'];
+
+const nowRounded = new Date();
+nowRounded.setMinutes(0, 0, 0);
+const demoTime = offsetHours => {
+  const date = new Date(nowRounded.getTime() + offsetHours * 60 * 60 * 1000);
+  return toLocalDateTime(date);
+};
+
+const demoDispatches = [
+  {
+    id: 'load-delivered', name: 'Produce delivery 1042', customer: 'North depot replenishment',
+    cargo: '18 pallets of refrigerated produce', origin: 'Brampton, ON',
+    destination: 'Toronto, ON', plannedEta: demoTime(-2), actualEta: demoTime(-1.5),
+    vehicle: 'Truck 12 / Fleet A', status: 'delivered', delayMinutes: '',
+    reason: '', redundancy: 'Backup refrigerated truck available from partner carrier.',
+    remediation: 'No follow-up required; confirm delivery receipt with depot.'
+  },
+  {
+    id: 'load-transit', name: 'Feed shipment 208', customer: 'West warehouse transfer',
+    cargo: '24 tonnes of bagged livestock feed', origin: 'Brampton, ON',
+    destination: 'Guelph, ON', plannedEta: demoTime(2), actualEta: '',
+    vehicle: 'Truck 08 / Fleet A', status: 'in_transit', delayMinutes: '',
+    reason: '', redundancy: 'Carrier B can dispatch a replacement truck within 90 minutes.',
+    remediation: 'Dispatcher to confirm arrival window with receiving site.'
+  },
+  {
+    id: 'load-canceled', name: 'Cold-chain delivery 317', customer: 'Regional grocery customer',
+    cargo: '12 pallets of chilled dairy', origin: 'Brampton, ON',
+    destination: 'Hamilton, ON', plannedEta: demoTime(-1), actualEta: '',
+    vehicle: 'Truck 03 / Fleet A', status: 'canceled', delayMinutes: '120',
+    reason: 'Refrigeration unit fault discovered before departure.',
+    redundancy: 'No backup refrigerated truck confirmed at dispatch time.',
+    remediation: 'Transfer load to rental reefer unit; inspect and repair Truck 03.'
+  }
+];
+
+const demoIncidents = [
+  {
+    id: 'incident-reefer', type: 'Vehicle breakdown', severity: 'medium',
+    description: 'Refrigeration unit fault delayed the chilled dairy dispatch; cargo temperature check required before release.',
+    dispatchId: 'load-canceled', status: 'in_progress', delayMinutes: '120',
+    estimatedCost: '450', remediation: 'Inspect refrigeration unit, document cargo temperature, and confirm replacement reefer availability.',
+    createdAt: new Date().toISOString()
+  }
+];
+
+const operationalSources = [
+  { label: 'Google Maps URLs: open directions without an API key', url: 'https://developers.google.com/maps/documentation/urls/get-started' },
+  { label: 'Transport Canada: Road safety in Canada', url: 'https://tc.canada.ca/en/road-transportation/road-safety-canada' },
+  { label: 'NIST SP 800-161 Rev. 1 Update 1: Cybersecurity Supply Chain Risk Management', url: 'https://csrc.nist.gov/pubs/sp/800/161/r1/upd1/final' },
+  { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework' }
+];
 
 const demoAssets = [
   {
@@ -25,6 +82,22 @@ const demoAssets = [
     exposure: 'unknown', admin: 'unknown', mfa: 'unknown', access: 'unknown',
     backups: 'unknown', logging: 'unknown', zone: 'Perimeter / DMZ', dependencies: []
   }
+];
+
+const demoNodes = [
+  { id: 'node-fw', name: 'Edge firewall', zone: 'Perimeter / DMZ', purpose: 'Filters inbound/outbound office network traffic.', dependencies: ['router'] },
+  { id: 'node-dispatch', name: 'Dispatch workstation', zone: 'Internal network', purpose: 'Dispatcher assigns trucks and confirms load status.', dependencies: ['farm-erp', 'm365'] },
+  { id: 'node-telematics', name: 'Fleet telematics gateway', zone: 'Perimeter / DMZ', purpose: 'Receives vehicle location and diagnostic updates.', dependencies: ['router'] },
+  { id: 'node-backup', name: 'Recovery admin console', zone: 'Restricted data zone', purpose: 'Restricted access point for restoration and recovery tasks.', dependencies: ['nas'] },
+  { id: 'node-yard-tablet', name: 'Yard check-in tablet', zone: 'Remote / user devices', purpose: 'Records trailer, driver, and arrival checks at the yard.', dependencies: ['node-dispatch', 'm365'] },
+  { id: 'node-warehouse-terminal', name: 'Warehouse receiving terminal', zone: 'Internal network', purpose: 'Confirms received quantities and flags damaged cargo.', dependencies: ['farm-erp', 'vendor-carrier'] },
+  { id: 'node-wifi-ap', name: 'Operations Wi-Fi access point', zone: 'Internal network', purpose: 'Provides staff connectivity for dispatch and receiving workflows.', dependencies: ['router', 'node-fw'] }
+];
+
+const demoVendors = [
+  { id: 'vendor-carrier', name: 'Regional Freight Partner', service: 'Overflow freight and refrigerated truck capacity', zone: 'Cloud / SaaS', access: 'Receives load details and delivery windows; no internal network access.', data: 'Shipment reference, cargo class, pickup/delivery addresses, ETA', dependencies: ['node-dispatch'], criticality: 'high', contact: 'Dispatch coordinator' },
+  { id: 'vendor-telematics', name: 'Fleet Telematics Provider', service: 'Vehicle location and diagnostic portal', zone: 'Perimeter / DMZ', access: 'Provider portal uses named fleet-manager accounts; integration method needs verification.', data: 'Vehicle identifiers, location, diagnostics', dependencies: ['node-telematics'], criticality: 'high', contact: 'Fleet manager' },
+  { id: 'vendor-it', name: 'Managed IT Support', service: 'Endpoint and network administration', zone: 'Remote / user devices', access: 'Remote support access; review named accounts, MFA, and approval process.', data: 'Device/network configuration and support logs', dependencies: ['node-backup', 'router'], criticality: 'medium', contact: 'Operations lead' }
 ];
 
 const typeIcons = {
@@ -129,6 +202,10 @@ const csfDescriptions = {
 };
 
 let assets = readAssets();
+let dispatches = readCollection(DISPATCH_STORAGE_KEY, demoDispatches, item => typeof item.name === 'string' && typeof item.plannedEta === 'string');
+let incidents = readCollection(INCIDENT_STORAGE_KEY, demoIncidents, item => typeof item.description === 'string' && typeof item.status === 'string');
+let networkNodes = readCollection(NODE_STORAGE_KEY, demoNodes, item => typeof item.name === 'string' && typeof item.zone === 'string' && Array.isArray(item.dependencies));
+let vendors = readCollection(VENDOR_STORAGE_KEY, demoVendors, item => typeof item.name === 'string' && typeof item.service === 'string' && Array.isArray(item.dependencies));
 let activeFilter = 'all';
 let activeMap = 'assets';
 let toastTimer;
@@ -143,6 +220,35 @@ function readAssets() {
   } catch (error) {
     console.warn('Could not load the saved inventory; using the demo inventory.', error);
     return structuredClone(demoAssets);
+  }
+}
+
+function readCollection(key, sample, validator) {
+  try {
+    const saved = localStorage.getItem(key);
+    if (!saved) return structuredClone(sample);
+    const parsed = JSON.parse(saved);
+    if (!Array.isArray(parsed) || !parsed.every(item => item && typeof item.id === 'string' && validator(item))) {
+      throw new Error(`Saved data in ${key} has an unexpected structure.`);
+    }
+    return parsed;
+  } catch (error) {
+    console.warn(`Could not load ${key}; showing the sample records.`, error);
+    return structuredClone(sample);
+  }
+}
+
+function toLocalDateTime(date) {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16);
+}
+
+function persistCollection(key, collection) {
+  try {
+    localStorage.setItem(key, JSON.stringify(collection));
+  } catch (error) {
+    console.error(`Could not save ${key} in this browser.`, error);
+    showToast('Could not save locally. Check browser storage settings.');
   }
 }
 
@@ -184,6 +290,9 @@ function render() {
   const findings = assess();
   renderSummary(findings);
   renderAssets();
+  renderVendors();
+  renderNodes();
+  renderOperations();
   renderFindings(findings);
   renderDiagram();
 }
@@ -207,7 +316,7 @@ function renderAssets() {
     return;
   }
   list.innerHTML = assets.map(asset => {
-    const deps = asset.dependencies.map(id => assets.find(item => item.id === id)).filter(Boolean);
+    const deps = asset.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
     return `<article class="asset-card">
       <div class="asset-card-top">
         <div class="asset-icon" aria-hidden="true">${escapeHtml(typeIcons[asset.type] || '◇')}</div>
@@ -223,6 +332,45 @@ function renderAssets() {
         <button class="asset-remove" type="button" data-action="remove" data-id="${escapeHtml(asset.id)}" aria-label="Remove ${escapeHtml(asset.name)}">Remove</button>
       </div>
     </article>`;
+  }).join('');
+}
+
+function topologyItems() {
+  return [
+    ...assets.map(item => ({ ...item, kind: 'asset', purpose: item.purpose || '', zone: item.zone || 'Not sure' })),
+    ...networkNodes.map(item => ({ ...item, kind: 'node' })),
+    ...vendors.map(item => ({ ...item, kind: 'vendor', purpose: item.service || '' }))
+  ];
+}
+
+function renderVendors() {
+  const list = document.querySelector('#vendor-list');
+  if (!vendors.length) {
+    list.innerHTML = '<div class="empty-state"><h3>No third parties recorded</h3><p>Add service providers, carriers, technology partners, or other suppliers to connect them to your systems and network zones.</p></div>';
+    return;
+  }
+  list.innerHTML = vendors.map(vendor => {
+    const links = vendor.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
+    return `<article class="vendor-card">
+      <div class="vendor-card-heading"><div><span class="vendor-type-label">THIRD-PARTY PROVIDER</span><h3>${escapeHtml(vendor.name)}</h3></div><div class="vendor-actions"><button class="asset-menu" type="button" data-edit-vendor="${escapeHtml(vendor.id)}" aria-label="Edit ${escapeHtml(vendor.name)}">✎</button><button class="vendor-delete" type="button" data-remove-vendor="${escapeHtml(vendor.id)}">Remove</button></div></div>
+      <p class="vendor-service">${escapeHtml(vendor.service)}</p>
+      <div class="vendor-details"><span><b>Connection zone</b>${escapeHtml(vendor.zone)}</span><span><b>Business criticality</b>${escapeHtml(capitalize(vendor.criticality || 'medium'))}</span><span><b>Internal contact</b>${escapeHtml(vendor.contact || 'Not assigned')}</span></div>
+      <p class="vendor-fact"><strong>Access:</strong> ${escapeHtml(vendor.access || 'Not recorded')}</p>
+      <p class="vendor-fact"><strong>Data:</strong> ${escapeHtml(vendor.data || 'Not recorded')}</p>
+      <p class="vendor-fact"><strong>Connected to:</strong> ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'No linked systems or nodes'}</p>
+    </article>`;
+  }).join('');
+}
+
+function renderNodes() {
+  const list = document.querySelector('#node-list');
+  if (!networkNodes.length) {
+    list.innerHTML = '<p class="small-muted">No network nodes yet. Use Add node to describe an endpoint, server, gateway, or infrastructure component.</p>';
+    return;
+  }
+  list.innerHTML = networkNodes.map(node => {
+    const links = node.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
+    return `<article class="node-card"><div class="node-card-icon" aria-hidden="true">◈</div><div class="node-card-body"><h4>${escapeHtml(node.name)}</h4><span>${escapeHtml(node.zone)}</span><p>${escapeHtml(node.purpose)}</p><small>Connected to: ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'None recorded'}</small></div><button class="asset-menu" type="button" data-edit-node="${escapeHtml(node.id)}" aria-label="Edit ${escapeHtml(node.name)}">✎</button><button class="vendor-delete" type="button" data-remove-node="${escapeHtml(node.id)}">Remove</button></article>`;
   }).join('');
 }
 
@@ -254,74 +402,204 @@ function renderFindings(findings) {
           <div><span class="detail-label">Why it matters</span><p class="detail-copy">${escapeHtml(rule.why(asset))}</p></div>
           <div><span class="detail-label">Recommended next steps</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p></div>
         </div>
-        <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span></div>
+        <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span><button class="learn-link" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}">Why this action? Sources ↗</button></div>
       </div>
     </article>`).join('');
+}
+
+function formatDate(value) {
+  if (!value) return 'Not recorded';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Invalid date';
+  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function taskDelayMinutes(task) {
+  if (task.actualEta && ['delivered', 'delayed'].includes(task.status)) {
+    const diff = Math.round((new Date(task.actualEta) - new Date(task.plannedEta)) / 60000);
+    return Math.max(0, diff);
+  }
+  return Math.max(0, Number(task.delayMinutes) || 0);
+}
+
+function humanStatus(status) {
+  return ({
+    scheduled: 'Scheduled', in_transit: 'In transit', delayed: 'Delayed',
+    delivered: 'Delivered', canceled: 'Canceled',
+    open: 'Open', in_progress: 'In progress', resolved: 'Resolved'
+  })[status] || 'Unknown';
+}
+
+function renderOperations() {
+  const active = dispatches.filter(task => !['delivered', 'canceled'].includes(task.status));
+  const disruptions = dispatches.filter(task => ['delayed', 'canceled'].includes(task.status));
+  const totalDelay = dispatches.reduce((sum, task) => sum + taskDelayMinutes(task), 0);
+  const openIssues = incidents.filter(issue => issue.status !== 'resolved').length;
+  const estimatedCost = incidents.reduce((sum, issue) => sum + (Number(issue.estimatedCost) || 0), 0);
+  document.querySelector('#operations-metrics').innerHTML = `
+    <article class="summary-card"><div class="summary-label">Active dispatches</div><div class="summary-value">${active.length}</div><div class="summary-hint">Scheduled, in transit, or awaiting update</div></article>
+    <article class="summary-card"><div class="summary-label">Delayed / canceled</div><div class="summary-value ${disruptions.length ? 'priority-med' : ''}">${disruptions.length}</div><div class="summary-hint">Reported dispatch tasks</div></article>
+    <article class="summary-card"><div class="summary-label">Recorded delay</div><div class="summary-value">${(totalDelay / 60).toFixed(1)}<span style="font-size:12px;color:#98a49d;font-weight:600"> hrs</span></div><div class="summary-hint">Sum of known task delays; user-entered</div></article>
+    <article class="summary-card"><div class="summary-label">Physical issues open</div><div class="summary-value ${openIssues ? 'priority-high' : ''}">${openIssues}</div><div class="summary-hint">Issues still being addressed</div></article>
+    <article class="summary-card"><div class="summary-label">Estimated direct impact</div><div class="summary-value">$${Math.round(estimatedCost).toLocaleString()}<span style="font-size:12px;color:#98a49d;font-weight:600"> CAD</span></div><div class="summary-hint">Optional user-entered estimates</div></article>`;
+
+  renderDispatches();
+  renderIncidents();
+}
+
+function mapsDirectionsUrl(task) {
+  const params = new URLSearchParams({ api: '1', origin: task.origin, destination: task.destination });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+function renderDispatches() {
+  const list = document.querySelector('#dispatch-list');
+  if (!dispatches.length) {
+    list.innerHTML = '<div class="no-findings">No dispatch tasks recorded yet. Add a load to see its planned ETA, route link, and fallback plan.</div>';
+    return;
+  }
+  list.innerHTML = [...dispatches].sort((a, b) => new Date(a.plannedEta) - new Date(b.plannedEta)).map(task => {
+    const statusClass = ['delayed', 'canceled'].includes(task.status) ? 'issue' : task.status === 'delivered' ? 'resolved' : '';
+    const delay = taskDelayMinutes(task);
+    return `<article class="dispatch-card">
+      <div class="dispatch-top"><div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
+      <p class="cargo-line"><strong>Cargo:</strong> ${escapeHtml(task.cargo)}</p>
+      <div class="route-line"><span>${escapeHtml(task.origin)}</span><span class="route-arrow" aria-hidden="true">→</span><span>${escapeHtml(task.destination)}</span></div>
+      <div class="task-facts"><span><b>Planned ETA</b>${escapeHtml(formatDate(task.plannedEta))}</span><span><b>Actual arrival</b>${escapeHtml(task.actualEta ? formatDate(task.actualEta) : 'Not yet recorded')}</span><span><b>Truck / carrier</b>${escapeHtml(task.vehicle || 'Not assigned')}</span>${delay ? `<span><b>Recorded delay</b>${delay} minutes</span>` : ''}</div>
+      ${task.reason ? `<p class="task-note"><strong>Disruption reason:</strong> ${escapeHtml(task.reason)}</p>` : ''}
+      <p class="task-note"><strong>Redundancy:</strong> ${escapeHtml(task.redundancy || 'No fallback recorded')}</p>
+      ${task.remediation ? `<p class="task-note"><strong>Next step:</strong> ${escapeHtml(task.remediation)}</p>` : ''}
+      <div class="dispatch-actions"><a class="learn-link map-link" href="${escapeHtml(mapsDirectionsUrl(task))}" target="_blank" rel="noopener noreferrer">Open route in Google Maps ↗</a><button class="learn-link" type="button" data-info="dispatch">How to use this record? Sources ↗</button></div>
+    </article>`;
+  }).join('');
+}
+
+function renderIncidents() {
+  const list = document.querySelector('#incident-list');
+  if (!incidents.length) {
+    list.innerHTML = '<div class="no-findings">No physical issues logged. Record equipment, road, cargo, facility, or safety disruptions and track their remediation.</div>';
+    return;
+  }
+  list.innerHTML = [...incidents].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(issue => {
+    const relatedTask = dispatches.find(task => task.id === issue.dispatchId);
+    return `<article class="incident-card">
+      <div class="incident-top"><span class="status-pill ${issue.status === 'resolved' ? 'resolved' : issue.severity === 'high' ? 'issue' : ''}">${escapeHtml(humanStatus(issue.status))}</span><button class="asset-menu" type="button" data-edit-incident="${escapeHtml(issue.id)}" aria-label="Edit issue">✎</button></div>
+      <h4>${escapeHtml(issue.type)} <span class="severity-inline">${escapeHtml(capitalize(issue.severity))} impact</span></h4>
+      <p>${escapeHtml(issue.description)}</p>
+      ${relatedTask ? `<p class="incident-related">Related load: ${escapeHtml(relatedTask.name)}</p>` : ''}
+      <div class="incident-metrics">${issue.delayMinutes ? `<span>${escapeHtml(issue.delayMinutes)} min reported delay</span>` : ''}${issue.estimatedCost ? `<span>$${Number(issue.estimatedCost).toLocaleString()} CAD estimated</span>` : ''}</div>
+      <p class="task-note"><strong>Remediation:</strong> ${escapeHtml(issue.remediation || 'No remediation step recorded')}</p>
+      <span class="incident-date">Reported ${escapeHtml(formatDate(issue.createdAt))}</span>
+    </article>`;
+  }).join('');
 }
 
 function renderDiagram() {
   const host = document.querySelector('#diagram');
   const footnote = document.querySelector('#map-footnote');
-  if (!assets.length) {
+  const items = activeMap === 'assets' ? topologyItems().filter(item => item.kind === 'asset') : topologyItems();
+  if (!items.length) {
     host.innerHTML = '<div class="diagram-empty">Add technologies to see your business map.</div>';
     return;
   }
-  const zones = activeMap === 'assets'
-    ? ['Inventory']
-    : ['Cloud / SaaS', 'Perimeter / DMZ', 'Internal network', 'Restricted data zone', 'Remote / user devices', 'Not sure'];
-  const width = Math.max(650, zones.length * 185 + 20);
+  const zones = activeMap === 'assets' ? ['Inventory'] : NETWORK_ZONES;
+  const width = activeMap === 'topology' ? zones.length * 245 + 24 : activeMap === 'network' ? zones.length * 205 + 24 : 920;
   const columnWidth = width / zones.length;
-  const nodeWidth = Math.min(145, columnWidth - 30);
+  const nodeWidth = activeMap === 'topology' ? 204 : Math.min(175, columnWidth - 24);
+  const nodeHeight = activeMap === 'topology' ? 62 : 54;
   const positions = new Map();
-  const grouped = zones.map(zone => assets.filter(asset => activeMap === 'assets' || asset.zone === zone));
-  grouped.forEach((group, zoneIndex) => {
-    group.forEach((asset, index) => {
-      positions.set(asset.id, { x: zoneIndex * columnWidth + columnWidth / 2, y: 66 + index * 78 });
+  const tierNames = ['Third parties & services', 'Applications & business assets', 'Network nodes & infrastructure'];
+  const tierKinds = [['vendor'], ['asset'], ['node']];
+  let height;
+  if (activeMap === 'topology') {
+    const tierCounts = tierKinds.map(kinds => Math.max(1, ...zones.map(zone => items.filter(item => kinds.includes(item.kind) && item.zone === zone).length)));
+    let y = 64;
+    const tierOffsets = tierCounts.map((count, index) => {
+      const top = y;
+      y += count * 79 + 64;
+      return top;
     });
-  });
-  const maxRows = Math.max(1, ...grouped.map(group => group.length));
-  const height = Math.max(245, 90 + maxRows * 78);
-  let markup = `<svg class="diagram-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${activeMap === 'assets' ? 'Asset dependency graph' : 'Systems grouped by network zone'}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#8ba092" stroke-width="1.2"/></marker></defs>`;
-  if (activeMap === 'network') {
-    zones.forEach((zone, index) => {
-      const x = index * columnWidth + 8;
-      markup += `<rect x="${x}" y="12" width="${columnWidth - 16}" height="${height - 22}" rx="7" fill="${index % 2 ? '#f5f8f5' : '#f0f5f0'}" stroke="#e4ebe4"/>`;
-      markup += `<text x="${x + 10}" y="32" fill="#63776a" font-size="10" font-family="DM Sans, sans-serif" font-weight="700">${escapeHtml(zone)}</text>`;
+    height = y + 12;
+    items.forEach(item => {
+      const tierIndex = tierKinds.findIndex(kinds => kinds.includes(item.kind));
+      const zoneIndex = Math.max(0, zones.indexOf(item.zone));
+      const sameGroup = items.filter(candidate => tierKinds[tierIndex].includes(candidate.kind) && candidate.zone === item.zone);
+      const itemIndex = sameGroup.findIndex(candidate => candidate.id === item.id);
+      positions.set(item.id, { x: zoneIndex * columnWidth + columnWidth / 2, y: tierOffsets[tierIndex] + itemIndex * 79 + nodeHeight / 2 });
+    });
+  } else {
+    const grouped = zones.map(zone => items.filter(item => activeMap === 'assets' || item.zone === zone));
+    const maxRows = Math.max(1, ...grouped.map(group => group.length));
+    height = Math.max(400, 76 + maxRows * 84);
+    grouped.forEach((group, zoneIndex) => {
+      group.forEach((item, index) => {
+        positions.set(item.id, { x: zoneIndex * columnWidth + columnWidth / 2, y: 82 + index * 84 + nodeHeight / 2 });
+      });
     });
   }
-  assets.forEach(asset => {
-    const from = positions.get(asset.id);
-    if (!from) return;
-    asset.dependencies.forEach(dependencyId => {
-      const to = positions.get(dependencyId);
-      if (!to) return;
-      const startX = from.x;
-      const startY = from.y;
-      const endX = to.x;
-      const endY = to.y;
-      const bend = Math.max(24, Math.abs(endX - startX) * .35);
-      const direction = endX >= startX ? 1 : -1;
-      markup += `<path d="M ${startX} ${startY} C ${startX - bend * direction} ${startY - 20}, ${endX + bend * direction} ${endY - 20}, ${endX} ${endY}" fill="none" stroke="#94a699" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)"/>`;
+  let markup = `<svg class="diagram-svg ${activeMap === 'topology' ? 'topology-svg' : ''}" style="width:${width}px;height:${height}px" viewBox="0 0 ${width} ${height}" role="img" aria-label="${activeMap === 'assets' ? 'Asset dependency graph' : activeMap === 'network' ? 'Network zones with connected nodes and third parties' : 'Full supply chain and network topology'}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#8ba092" stroke-width="1.2"/></marker></defs>`;
+  if (activeMap === 'topology') {
+    tierKinds.forEach((kinds, tierIndex) => {
+      const entities = items.filter(item => kinds.includes(item.kind));
+      const tierY = Math.min(...entities.map(item => positions.get(item.id).y)) - nodeHeight / 2 - 25;
+      const tierHeight = Math.max(96, Math.max(...zones.map(zone => entities.filter(item => item.zone === zone).length), 1) * 79 + 36);
+      markup += `<rect x="5" y="${tierY}" width="${width - 10}" height="${tierHeight}" rx="8" fill="${tierIndex % 2 ? '#f5f8f5' : '#edf4ee'}" stroke="#e2ebe3"/>`;
+      markup += `<text x="17" y="${tierY + 18}" fill="#60766a" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(tierNames[tierIndex])}</text>`;
     });
-  });
-  assets.forEach(asset => {
-    const point = positions.get(asset.id);
+  }
+  if (activeMap !== 'assets') {
+    zones.forEach((zone, index) => {
+      const x = index * columnWidth + 5;
+      const y = activeMap === 'topology' ? 5 : 10;
+      const boxHeight = activeMap === 'topology' ? height - 10 : height - 18;
+      markup += `<rect x="${x}" y="${y}" width="${columnWidth - 10}" height="${boxHeight}" rx="8" fill="none" stroke="#dce6dd" stroke-dasharray="${activeMap === 'topology' ? '0' : '4 4'}"/>`;
+      markup += `<text x="${x + 9}" y="${activeMap === 'topology' ? 43 : 31}" fill="#45634e" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(zone)}</text>`;
+    });
+  } else {
+    markup += `<text x="14" y="26" fill="#63776a" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">Business technology assets</text>`;
+  }
+  if (activeMap !== 'network') {
+    items.forEach(item => {
+      const from = positions.get(item.id);
+      if (!from) return;
+      (item.dependencies || []).forEach(dependencyId => {
+        const to = positions.get(dependencyId);
+        if (!to) return;
+        const direction = to.x >= from.x ? 1 : -1;
+        const bend = Math.max(24, Math.abs(to.x - from.x) * .32);
+        const cy = from.y + (to.y - from.y) * .5;
+        markup += `<path d="M ${from.x} ${from.y} C ${from.x + bend * direction} ${cy}, ${to.x - bend * direction} ${cy}, ${to.x} ${to.y}" fill="none" stroke="#8da293" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>`;
+      });
+    });
+  }
+  items.forEach(item => {
+    const point = positions.get(item.id);
     if (!point) return;
     const x = point.x - nodeWidth / 2;
-    const y = point.y - 20;
-    const fill = asset.type.includes('Network') || asset.type.includes('Cloud') ? '#edf3f5' : '#eaf3eb';
-    const stroke = asset.type.includes('Network') || asset.type.includes('Cloud') ? '#d5e1e5' : '#d7e7d9';
-    const name = asset.name.length > 19 ? `${asset.name.slice(0, 18)}…` : asset.name;
-    markup += `<g><rect x="${x}" y="${y}" width="${nodeWidth}" height="42" rx="7" fill="${fill}" stroke="${stroke}"/><circle cx="${x + 14}" cy="${point.y + 1}" r="4" fill="${asset.type.includes('Network') || asset.type.includes('Cloud') ? '#7599a8' : '#78a982'}"/><text x="${x + 25}" y="${point.y - 1}" fill="#315144" font-size="10" font-family="DM Sans, sans-serif" font-weight="700">${escapeHtml(name)}</text><text x="${x + 25}" y="${point.y + 12}" fill="#839087" font-size="8" font-family="DM Sans, sans-serif">${escapeHtml(asset.type.length > 19 ? `${asset.type.slice(0, 18)}…` : asset.type)}</text></g>`;
+    const y = point.y - nodeHeight / 2;
+    const palettes = {
+      asset: ['#eaf3eb', '#d6e6d8', '#78a982'],
+      node: ['#edf3f5', '#d5e1e5', '#7599a8'],
+      vendor: ['#f8f1e7', '#eadcc3', '#c18a3d']
+    };
+    const [fill, stroke, dot] = palettes[item.kind];
+    const title = item.name.length > 27 ? `${item.name.slice(0, 26)}…` : item.name;
+    const detailText = item.kind === 'vendor' ? item.service || item.access || 'Third-party provider'
+      : item.kind === 'node' ? item.purpose : item.type || item.purpose;
+    const detail = detailText.length > 31 ? `${detailText.slice(0, 30)}…` : detailText;
+    const kindLabel = item.kind === 'vendor' ? 'VENDOR' : item.kind === 'node' ? 'NODE' : 'ASSET';
+    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)} in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${escapeHtml(item.zone)})</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><circle cx="${x + 14}" cy="${y + 16}" r="4" fill="${dot}"/><text x="${x + 25}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 13}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${escapeHtml(detail)}</text></g>`;
   });
-  if (activeMap === 'assets' && assets.every(asset => !asset.dependencies.length)) {
-    markup += `<text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#94a098" font-size="9" font-family="DM Sans, sans-serif">No dependencies recorded yet — add them in a technology’s inventory form.</text>`;
+  if (activeMap !== 'network' && items.every(item => !item.dependencies?.length)) {
+    markup += `<text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#94a098" font-size="9" font-family="Segoe UI, sans-serif">No dependencies recorded yet — add links when editing a node, technology, or vendor.</text>`;
   }
   markup += '</svg>';
   host.innerHTML = markup;
   footnote.textContent = activeMap === 'assets'
-    ? 'Arrows indicate declared dependencies, not verified network traffic.'
-    : 'Systems are grouped by the hosting zone selected in the inventory; this is not a discovered topology.';
+    ? 'Technology assets only. Arrows show dependencies you entered, not observed network traffic.'
+    : activeMap === 'network'
+      ? 'All recorded assets, nodes, and vendors are grouped into their declared zones; connections are omitted in this view.'
+      : 'Combined view: vendors/services, business assets, and network nodes are arranged in tiers across zones. Arrows are declared dependencies, not live connections.';
 }
 
 function capitalize(value) {
@@ -341,7 +619,7 @@ function openDialog(assetId) {
   form.reset();
   const asset = assets.find(item => item.id === assetId);
   const dependencies = document.querySelector('#dependencies');
-  dependencies.innerHTML = assets.filter(item => item.id !== assetId)
+  dependencies.innerHTML = topologyItems().filter(item => item.id !== assetId)
     .map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)}</option>`).join('');
   form.dataset.editingId = asset ? asset.id : '';
   document.querySelector('.dialog-heading h2').textContent = asset ? 'Edit technology' : 'Add a technology';
@@ -358,6 +636,127 @@ function openDialog(assetId) {
   form.elements.name.focus();
 }
 
+function fillZoneSelect(select) {
+  select.innerHTML = NETWORK_ZONES.map(zone => `<option value="${escapeHtml(zone)}">${escapeHtml(zone)}</option>`).join('');
+}
+
+function fillEntitySelect(select, excludedId) {
+  select.innerHTML = topologyItems().filter(item => item.id !== excludedId)
+    .map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${item.kind})</option>`).join('');
+}
+
+function openNodeDialog(nodeId) {
+  const form = document.querySelector('#node-form');
+  const node = networkNodes.find(item => item.id === nodeId);
+  form.reset();
+  form.dataset.editingId = node ? node.id : '';
+  document.querySelector('#node-dialog h2').textContent = node ? 'Edit network node' : 'Add network node';
+  form.querySelector('[type="submit"]').textContent = node ? 'Update node' : 'Save node';
+  fillZoneSelect(form.elements.zone);
+  fillEntitySelect(form.elements.dependencies, nodeId);
+  if (node) {
+    form.elements.name.value = node.name;
+    form.elements.zone.value = node.zone;
+    form.elements.purpose.value = node.purpose;
+    [...form.elements.dependencies.options].forEach(option => { option.selected = node.dependencies.includes(option.value); });
+  }
+  document.querySelector('#node-dialog').showModal();
+  form.elements.name.focus();
+}
+
+function openVendorDialog(vendorId) {
+  const form = document.querySelector('#vendor-form');
+  const vendor = vendors.find(item => item.id === vendorId);
+  form.reset();
+  form.dataset.editingId = vendor ? vendor.id : '';
+  document.querySelector('#vendor-dialog h2').textContent = vendor ? 'Edit third-party vendor' : 'Add third-party vendor';
+  form.querySelector('[type="submit"]').textContent = vendor ? 'Update vendor' : 'Save vendor';
+  fillZoneSelect(form.elements.zone);
+  fillEntitySelect(form.elements.dependencies, vendorId);
+  if (vendor) {
+    for (const key of ['name', 'zone', 'service', 'access', 'data', 'criticality', 'contact']) form.elements[key].value = vendor[key] || '';
+    [...form.elements.dependencies.options].forEach(option => { option.selected = vendor.dependencies.includes(option.value); });
+  }
+  document.querySelector('#vendor-dialog').showModal();
+  form.elements.name.focus();
+}
+
+function createId(prefix) {
+  return `${prefix}-${crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+}
+
+function openDispatchDialog(dispatchId) {
+  const form = document.querySelector('#dispatch-form');
+  const task = dispatches.find(item => item.id === dispatchId);
+  form.reset();
+  form.dataset.editingId = task ? task.id : '';
+  document.querySelector('#dispatch-dialog h2').textContent = task ? 'Update dispatch task' : 'New dispatch task';
+  form.querySelector('[type="submit"]').textContent = task ? 'Update dispatch' : 'Save dispatch';
+  if (task) {
+    for (const field of ['name', 'customer', 'cargo', 'origin', 'destination', 'plannedEta', 'vehicle', 'status', 'actualEta', 'delayMinutes', 'reason', 'redundancy', 'remediation']) {
+      form.elements[field].value = task[field] || '';
+    }
+  } else {
+    form.elements.plannedEta.value = demoTime(2);
+  }
+  document.querySelector('#dispatch-dialog').showModal();
+  form.elements.name.focus();
+}
+
+function openIncidentDialog(incidentId) {
+  const form = document.querySelector('#incident-form');
+  const issue = incidents.find(item => item.id === incidentId);
+  form.reset();
+  form.dataset.editingId = issue ? issue.id : '';
+  document.querySelector('#incident-dialog h2').textContent = issue ? 'Update operational issue' : 'Log an operational issue';
+  form.querySelector('[type="submit"]').textContent = issue ? 'Update issue' : 'Save issue';
+  document.querySelector('#incident-dispatch').innerHTML = `<option value="">Not linked to a dispatch</option>${dispatches.map(task => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.name)}</option>`).join('')}`;
+  if (issue) {
+    for (const field of ['type', 'severity', 'description', 'dispatchId', 'status', 'delayMinutes', 'estimatedCost', 'remediation']) {
+      form.elements[field].value = issue[field] || '';
+    }
+  }
+  document.querySelector('#incident-dialog').showModal();
+  form.elements.description.focus();
+}
+
+function openInfoDialog(kind, ruleKey) {
+  const title = document.querySelector('#info-title');
+  const eyebrow = document.querySelector('#info-eyebrow');
+  const content = document.querySelector('#info-content');
+  const sources = document.querySelector('#info-sources');
+  let body;
+  let references = operationalSources;
+  if (kind === 'finding') {
+    const rule = ruleDefinitions.find(item => item.key === ruleKey);
+    if (!rule) return;
+    const codes = rule.controls.map(code => `${code}: ${csfDescriptions[code] || 'Related cybersecurity outcome'}`);
+    eyebrow.textContent = 'UNDERSTAND THE CONTROL';
+    title.textContent = rule.title;
+    body = `<p><strong>Why it matters:</strong> ${escapeHtml(rule.why({ admin: 'unknown', mfa: 'unknown', access: 'unknown', backups: 'unknown', logging: 'unknown', exposure: 'unknown' }))}</p>
+      <p><strong>What to do:</strong> ${escapeHtml(rule.action)}</p>
+      <p><strong>Framework reference:</strong> ${codes.map(escapeHtml).join('; ')}. These are outcome references, not a claim that following one step makes the business compliant.</p>
+      <p class="educational-callout">A control reduces a risk pathway; it cannot guarantee that an incident will not happen. Confirm product-specific settings and assign an owner to verify the change.</p>`;
+    references = [{ label: 'NIST Cybersecurity Framework 2.0 (official)', url: 'https://www.nist.gov/cyberframework' }];
+  } else {
+    eyebrow.textContent = kind === 'centralized' ? 'FUTURE CENTRAL OPERATIONS' : 'TRANSPORT OPERATIONS';
+    title.textContent = kind === 'centralized' ? 'What a centralized system needs' : 'How to use dispatch and disruption records';
+    body = kind === 'centralized'
+      ? `<p><strong>Connect the sources:</strong> a production system would authenticate company users and receive approved events from dispatch/TMS, fleet/telematics, warehouse, maintenance, and incident-reporting systems. Each update should retain its source, timestamp, affected load/asset, and whether it is automated or user reported.</p>
+        <p><strong>Centralize carefully:</strong> store normalized operational records and append-only status history in a company-scoped service. Give each tenant isolated access; map a vendor/system to the process, data, vehicle, and loads it supports. Keep raw telemetry and sensitive information only when there is a defined purpose and retention period.</p>
+        <p><strong>Turn updates into work:</strong> recompute deterministic risk rules when verified facts change. If a gap disappears, propose completion for an owner to confirm rather than deleting the remediation record; keep the audit trail and reopen/link a recurrence if the control later fails.</p>
+        <p><strong>Make statistics explainable:</strong> label values as measured, source-system reported, dispatcher-entered, or estimated. Preserve units/time windows and avoid double-counting a dispatch delay and its linked incident. Attribute a disruption to cyber activity only when an investigation supports that conclusion.</p>
+        <p class="educational-callout">This prototype is not centralized and has no connectors. A production rollout needs a secured backend, identity and authorization, integration agreements, data quality monitoring, audit/retention controls, and tested recovery.</p>`
+      : `<p><strong>Resource flow:</strong> dispatch software coordinates jobs, cargo, assignments, and status. Route-planning tools help a dispatcher compare origin and destination. Telematics can provide vehicle/location signals when an actual integration exists. A backup truck or carrier is operational redundancy, not a software setting.</p>
+        <p><strong>Risk pathway:</strong> an unavailable dispatch system can delay assignments; incorrect route or cargo data can send the wrong load or route; a vehicle or facility fault can affect delivery, product condition, and safety. Record the affected process, reported facts, fallback, and owner of the next action.</p>
+        <p><strong>How statistics work:</strong> dispatch delay is calculated from the entered ETA/actual arrival or delay estimate. Direct-impact totals add optional user-entered incident estimates. These are descriptive records, not verified accounting or proof that cyber activity caused a physical event. A linked incident may describe the same disruption, so do not add its delay again.</p>
+        <p class="educational-callout">Google Maps opens a route-planning page from the entered endpoints. This demo does not embed a live map, read GPS, calculate a reliable operational ETA, notify drivers, or ingest traffic. Dispatchers must verify routes, road conditions, vehicle restrictions, cargo handling, and applicable safety procedures.</p>`;
+  }
+  content.innerHTML = body;
+  sources.innerHTML = references.map(source => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)} ↗</a>`).join('');
+  document.querySelector('#info-dialog').showModal();
+}
+
 document.querySelector('#add-asset-top').addEventListener('click', openDialog);
 document.querySelector('#asset-list').addEventListener('click', event => {
   const button = event.target.closest('button[data-action]');
@@ -369,7 +768,11 @@ document.querySelector('#asset-list').addEventListener('click', event => {
     if (!asset) return;
     assets = assets.filter(item => item.id !== asset.id)
       .map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== asset.id) }));
+    networkNodes = networkNodes.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== asset.id) }));
+    vendors = vendors.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== asset.id) }));
     saveAssets();
+    persistCollection(NODE_STORAGE_KEY, networkNodes);
+    persistCollection(VENDOR_STORAGE_KEY, vendors);
     render();
     showToast(`${asset.name} removed from inventory.`);
   }
@@ -410,9 +813,204 @@ document.querySelector('#asset-form').addEventListener('submit', event => {
 });
 document.querySelector('#reset-demo').addEventListener('click', () => {
   assets = structuredClone(demoAssets);
+  networkNodes = structuredClone(demoNodes);
+  vendors = structuredClone(demoVendors);
+  dispatches = structuredClone(demoDispatches);
+  incidents = structuredClone(demoIncidents);
   saveAssets();
+  persistCollection(NODE_STORAGE_KEY, networkNodes);
+  persistCollection(VENDOR_STORAGE_KEY, vendors);
+  persistCollection(DISPATCH_STORAGE_KEY, dispatches);
+  persistCollection(INCIDENT_STORAGE_KEY, incidents);
   render();
-  showToast('Demo inventory restored.');
+  showToast('Demo inventory and transport records restored.');
+});
+
+document.querySelector('#add-node').addEventListener('click', () => openNodeDialog());
+document.querySelector('#add-vendor').addEventListener('click', () => openVendorDialog());
+document.querySelector('#node-list').addEventListener('click', event => {
+  const editButton = event.target.closest('[data-edit-node]');
+  if (editButton) openNodeDialog(editButton.dataset.editNode);
+  const removeButton = event.target.closest('[data-remove-node]');
+  if (removeButton) {
+    const removedId = removeButton.dataset.removeNode;
+    const removed = networkNodes.find(item => item.id === removedId);
+    networkNodes = networkNodes.filter(item => item.id !== removedId);
+    assets = assets.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    vendors = vendors.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    networkNodes = networkNodes.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    persistCollection(NODE_STORAGE_KEY, networkNodes);
+    persistCollection(VENDOR_STORAGE_KEY, vendors);
+    saveAssets();
+    render();
+    if (removed) showToast(`${removed.name} removed; its declared links were cleared.`);
+  }
+});
+document.querySelector('#vendor-list').addEventListener('click', event => {
+  const editButton = event.target.closest('[data-edit-vendor]');
+  if (editButton) openVendorDialog(editButton.dataset.editVendor);
+  const removeButton = event.target.closest('[data-remove-vendor]');
+  if (removeButton) {
+    const removedId = removeButton.dataset.removeVendor;
+    const removed = vendors.find(item => item.id === removedId);
+    vendors = vendors.filter(item => item.id !== removedId);
+    assets = assets.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    networkNodes = networkNodes.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    vendors = vendors.map(item => ({ ...item, dependencies: item.dependencies.filter(id => id !== removedId) }));
+    persistCollection(VENDOR_STORAGE_KEY, vendors);
+    persistCollection(NODE_STORAGE_KEY, networkNodes);
+    saveAssets();
+    render();
+    if (removed) showToast(`${removed.name} removed; its declared links were cleared.`);
+  }
+});
+document.querySelector('#diagram').addEventListener('click', event => {
+  const item = event.target.closest('[data-map-kind]');
+  if (!item) return;
+  if (item.dataset.mapKind === 'node') openNodeDialog(item.dataset.mapId);
+  if (item.dataset.mapKind === 'vendor') openVendorDialog(item.dataset.mapId);
+  if (item.dataset.mapKind === 'asset') openDialog(item.dataset.mapId);
+});
+document.querySelector('#diagram').addEventListener('keydown', event => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  const item = event.target.closest('[data-map-kind]');
+  if (!item) return;
+  event.preventDefault();
+  item.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+});
+
+document.querySelector('#node-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const editingId = form.dataset.editingId;
+  const node = {
+    id: editingId || createId('node'),
+    name: String(data.get('name')).trim(),
+    zone: data.get('zone'),
+    purpose: String(data.get('purpose')).trim(),
+    dependencies: data.getAll('dependencies')
+  };
+  if (editingId) networkNodes = networkNodes.map(item => item.id === editingId ? node : item);
+  else networkNodes.push(node);
+  persistCollection(NODE_STORAGE_KEY, networkNodes);
+  render();
+  form.closest('dialog').close();
+  showToast(`Node "${node.name}" saved to ${node.zone}.`);
+});
+
+document.querySelector('#vendor-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const editingId = form.dataset.editingId;
+  const vendor = {
+    id: editingId || createId('vendor'),
+    name: String(data.get('name')).trim(),
+    service: String(data.get('service')).trim(),
+    zone: data.get('zone'),
+    access: String(data.get('access')).trim(),
+    data: String(data.get('data')).trim(),
+    criticality: data.get('criticality'),
+    contact: String(data.get('contact')).trim(),
+    dependencies: data.getAll('dependencies')
+  };
+  if (editingId) vendors = vendors.map(item => item.id === editingId ? vendor : item);
+  else vendors.push(vendor);
+  persistCollection(VENDOR_STORAGE_KEY, vendors);
+  render();
+  form.closest('dialog').close();
+  showToast(`Vendor "${vendor.name}" saved and linked to the topology.`);
+});
+
+document.querySelector('#add-dispatch').addEventListener('click', () => openDispatchDialog());
+document.querySelector('#dispatch-list').addEventListener('click', event => {
+  const button = event.target.closest('[data-edit-dispatch]');
+  if (button) openDispatchDialog(button.dataset.editDispatch);
+  const infoButton = event.target.closest('[data-info="dispatch"]');
+  if (infoButton) openInfoDialog('dispatch');
+});
+document.querySelector('#add-incident').addEventListener('click', () => openIncidentDialog());
+document.querySelector('#incident-list').addEventListener('click', event => {
+  const button = event.target.closest('[data-edit-incident]');
+  if (button) openIncidentDialog(button.dataset.editIncident);
+});
+document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => {
+  document.querySelector(`#${button.dataset.close}`).close();
+}));
+document.querySelectorAll('[data-info]').forEach(button => button.addEventListener('click', () => {
+  openInfoDialog(button.dataset.info, button.dataset.rule);
+}));
+document.querySelector('#finding-list').addEventListener('click', event => {
+  const button = event.target.closest('[data-info="finding"]');
+  if (button) openInfoDialog('finding', button.dataset.rule);
+});
+document.querySelector('#dispatch-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const status = data.get('status');
+  if (status === 'canceled' && !String(data.get('reason')).trim()) {
+    showToast('Record the reason for cancellation before saving.');
+    form.elements.reason.focus();
+    return;
+  }
+  if (status === 'delivered' && !data.get('actualEta')) {
+    showToast('Enter the actual arrival time to record a delivery.');
+    form.elements.actualEta.focus();
+    return;
+  }
+  const editingId = form.dataset.editingId;
+  const task = {
+    id: editingId || createId('dispatch'),
+    name: String(data.get('name')).trim(),
+    customer: String(data.get('customer')).trim(),
+    cargo: String(data.get('cargo')).trim(),
+    origin: String(data.get('origin')).trim(),
+    destination: String(data.get('destination')).trim(),
+    plannedEta: data.get('plannedEta'),
+    vehicle: String(data.get('vehicle')).trim(),
+    status,
+    actualEta: data.get('actualEta'),
+    delayMinutes: data.get('delayMinutes'),
+    reason: String(data.get('reason')).trim(),
+    redundancy: String(data.get('redundancy')).trim(),
+    remediation: String(data.get('remediation')).trim()
+  };
+  if (editingId) dispatches = dispatches.map(item => item.id === editingId ? task : item);
+  else dispatches.push(task);
+  persistCollection(DISPATCH_STORAGE_KEY, dispatches);
+  renderOperations();
+  form.closest('dialog').close();
+  showToast(`Dispatch ${task.status === 'canceled' ? 'cancellation' : 'task'} saved.`);
+});
+document.querySelector('#incident-form').addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.reportValidity()) return;
+  const data = new FormData(form);
+  const editingId = form.dataset.editingId;
+  const issue = {
+    id: editingId || createId('incident'),
+    type: data.get('type'),
+    severity: data.get('severity'),
+    description: String(data.get('description')).trim(),
+    dispatchId: data.get('dispatchId'),
+    status: data.get('status'),
+    delayMinutes: data.get('delayMinutes'),
+    estimatedCost: data.get('estimatedCost'),
+    remediation: String(data.get('remediation')).trim(),
+    createdAt: editingId ? incidents.find(item => item.id === editingId).createdAt : new Date().toISOString()
+  };
+  if (editingId) incidents = incidents.map(item => item.id === editingId ? issue : item);
+  else incidents.push(issue);
+  persistCollection(INCIDENT_STORAGE_KEY, incidents);
+  renderOperations();
+  form.closest('dialog').close();
+  showToast(`Operational issue ${issue.status === 'resolved' ? 'marked resolved' : 'saved'}.`);
 });
 document.querySelectorAll('.filter-tab').forEach(button => button.addEventListener('click', () => {
   activeFilter = button.dataset.filter;
@@ -427,15 +1025,22 @@ document.querySelector('#network-map-tab').addEventListener('click', () => {
   activeMap = 'network';
   updateMapTabs();
 });
+document.querySelector('#topology-map-tab').addEventListener('click', () => {
+  activeMap = 'topology';
+  updateMapTabs();
+});
 
 function updateMapTabs() {
   const assetTab = document.querySelector('#asset-map-tab');
   const networkTab = document.querySelector('#network-map-tab');
+  const topologyTab = document.querySelector('#topology-map-tab');
   assetTab.classList.toggle('active', activeMap === 'assets');
   networkTab.classList.toggle('active', activeMap === 'network');
+  topologyTab.classList.toggle('active', activeMap === 'topology');
   assetTab.setAttribute('aria-selected', String(activeMap === 'assets'));
   networkTab.setAttribute('aria-selected', String(activeMap === 'network'));
-  document.querySelector('#diagram').setAttribute('aria-label', activeMap === 'assets' ? 'Asset relationship diagram' : 'Network zone diagram');
+  topologyTab.setAttribute('aria-selected', String(activeMap === 'topology'));
+  document.querySelector('#diagram').setAttribute('aria-label', activeMap === 'assets' ? 'Asset relationship diagram' : activeMap === 'network' ? 'Network zone diagram' : 'Full network topology diagram');
   renderDiagram();
 }
 

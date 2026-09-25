@@ -23,10 +23,10 @@
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">SMALL BUSINESS SECURITY, MADE PRACTICAL</p>
-          <h1>Know your risks.<br><span>Know what to do next.</span></h1>
-          <p class="hero-description">Map the tools your business depends on, find the gaps that matter most, and get a clear, prioritized plan to strengthen your controls.</p>
-          <a class="button button-light" href="#inventory">Build your inventory <span aria-hidden="true">↓</span></a>
+          <p class="eyebrow">CYBER + SUPPLY-CHAIN OPERATIONS</p>
+          <h1>Keep the fleet moving.<br><span>Know what to do next.</span></h1>
+          <p class="hero-description">Connect the systems, vendors, loads, and physical disruptions your transportation business depends on. Learn why each safeguard matters and track the recovery work.</p>
+          <a class="button button-light" href="#operations">Explore transport operations <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-art" aria-hidden="true">
           <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -38,7 +38,7 @@
 
       <section class="notice" aria-label="Privacy and scope">
         <span class="notice-icon" aria-hidden="true">✓</span>
-        <p><strong>Private by design.</strong> Your inventory stays in this browser. This planner does not connect to your systems, inspect configurations, or send data to a server.</p>
+        <p><strong>Demo data stays in this browser.</strong> No live truck tracking or system integrations. ETAs, incidents, and financial impact are entered by you; map links open Google Maps.</p>
         <span class="framework-chip">NIST CSF 2.0 aligned</span>
       </section>
 
@@ -65,12 +65,44 @@
         </div>
       </section>
 
+      <section class="section-block operations-section" id="operations">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">02 / TRANSPORT OPERATIONS &amp; RESILIENCE</p>
+            <h2>What is moving, what could stop it?</h2>
+            <p class="section-description">Follow a load from dispatch to delivery, record redundancy and cancellation reasons, and track physical incidents alongside the operational work to resolve them.</p>
+          </div>
+          <div class="operations-heading-actions">
+            <button class="button button-quiet" type="button" data-info="centralized">Central system design</button>
+            <button class="button button-quiet" type="button" data-info="operations">How this works <span aria-hidden="true">ⓘ</span></button>
+          </div>
+        </div>
+        <div class="operations-metrics" id="operations-metrics" aria-label="Transport disruption statistics"></div>
+        <div class="operations-layout">
+          <div class="operations-column">
+            <div class="subsection-heading">
+              <div><h3>Dispatch &amp; delivery tasks</h3><p>Record cargo, route, planned/actual ETA, cancellation, and fallback plan.</p></div>
+              <button class="button button-dark" id="add-dispatch" type="button">＋ New dispatch</button>
+            </div>
+            <div class="dispatch-list" id="dispatch-list" aria-live="polite"></div>
+          </div>
+          <aside class="physical-column">
+            <div class="subsection-heading">
+              <div><h3>Physical issues &amp; remediation</h3><p>Track a real-world consequence and who is addressing it.</p></div>
+              <button class="button button-quiet" id="add-incident" type="button">＋ Log issue</button>
+            </div>
+            <div class="incident-list" id="incident-list" aria-live="polite"></div>
+          </aside>
+        </div>
+        <div class="operations-footnote"><strong>Operational learning:</strong> A dispatch platform coordinates orders and status; maps assist with route planning; telematics may report vehicle location or condition; backup vehicles/carriers provide resilience. A cyber outage or inaccurate dispatch record can become a missed delivery, unsafe reroute, spoiled/damaged cargo, or service interruption. These sample records are manually reported, not live telemetry or safety advice.</div>
+      </section>
+
       <section class="section-block risk-section" id="priorities">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">02 / PRIORITIZE</p>
+            <p class="eyebrow">03 / PRIORITIZE CYBERSECURITY GAPS</p>
             <h2>Risk priorities</h2>
-            <p class="section-description">A transparent, indicative score helps you decide what to tackle first—not a prediction of financial loss.</p>
+            <p class="section-description">See how missing safeguards could disrupt a business process, and why each practical action reduces that exposure. Scores are indicative, not a prediction of loss.</p>
           </div>
           <span class="live-label"><span></span> Updates as you edit</span>
         </div>
@@ -80,7 +112,7 @@
             <button class="filter-tab" data-filter="high" type="button">High priority <span id="count-high">0</span></button>
             <button class="filter-tab" data-filter="medium" type="button">Medium <span id="count-medium">0</span></button>
           </div>
-          <span class="sort-caption">Score = gap + impact + exposure · High 75+ · Medium 52–74 · Review below 52</span>
+          <span class="sort-caption">Indicative: control gap + business criticality + exposure · High 75+ · Medium 52–74</span>
         </div>
         <div class="finding-list" id="finding-list" aria-live="polite"></div>
       </section>
@@ -88,26 +120,46 @@
       <section class="section-block map-section" id="maps">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">03 / UNDERSTAND CONNECTIONS</p>
-            <h2>Your business, mapped</h2>
-            <p class="section-description">See how inventoried systems relate and where they sit. Diagrams show only the relationships and zones you entered.</p>
+            <p class="eyebrow">04 / SUPPLY CHAIN &amp; NETWORK TOPOLOGY</p>
+            <h2>How your operations connect</h2>
+            <p class="section-description">Explore connected assets, network zones, internal nodes, vendors, and the business services they support. Add nodes and third parties to build this map around your operation.</p>
           </div>
-          <div class="map-switch" role="tablist" aria-label="Diagram view">
-            <button class="map-tab active" id="asset-map-tab" role="tab" aria-selected="true" type="button">Asset graph</button>
-            <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" type="button">Network zones</button>
+          <div class="map-heading-tools">
+            <div class="map-switch" role="tablist" aria-label="Diagram view">
+              <button class="map-tab active" id="asset-map-tab" role="tab" aria-selected="true" type="button">Asset graph</button>
+              <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" type="button">Network zones</button>
+              <button class="map-tab" id="topology-map-tab" role="tab" aria-selected="false" type="button">Full topology</button>
+            </div>
+            <button class="button button-dark" id="add-node" type="button">＋ Add node</button>
           </div>
         </div>
         <div class="panel map-panel">
-          <div class="map-legend"><span><i class="legend-dot dot-app"></i> Application / service</span><span><i class="legend-dot dot-infra"></i> Infrastructure</span><span><i class="legend-line"></i> Declared dependency</span></div>
+          <div class="map-legend"><span><i class="legend-dot dot-app"></i> Application / asset</span><span><i class="legend-dot dot-infra"></i> Node / infrastructure</span><span><i class="legend-dot dot-vendor"></i> Vendor / third party</span><span><i class="legend-line"></i> Declared dependency</span></div>
           <div class="diagram-wrap" id="diagram" role="tabpanel" aria-label="Asset relationship diagram"></div>
           <p class="map-footnote" id="map-footnote">Arrows indicate declared dependencies, not verified network traffic.</p>
         </div>
+        <div class="node-directory">
+          <div class="node-directory-heading"><div><h3>Network node inventory</h3><p>Click a node on the map or edit it here to update its zone, purpose, and dependencies.</p></div></div>
+          <div class="node-list" id="node-list" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="section-block vendor-section" id="vendors">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">05 / THIRD-PARTY DEPENDENCIES</p>
+            <h2>Vendors and business partners</h2>
+            <p class="section-description">Record the service they provide, the network zone their connection lands in, what they access, and the assets or nodes that depend on them.</p>
+          </div>
+          <button class="button button-dark" id="add-vendor" type="button">＋ Add vendor</button>
+        </div>
+        <div class="vendor-list" id="vendor-list" aria-live="polite"></div>
       </section>
 
       <section class="section-block method-section" id="method">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">04 / PUT THE PLAN TO WORK</p>
+            <p class="eyebrow">06 / PUT THE PLAN TO WORK</p>
             <h2>From assessment to stronger controls</h2>
             <p class="section-description">Start with a useful inventory and build a repeatable security practice as your business grows.</p>
           </div>
@@ -123,7 +175,7 @@
     </main>
 
     <footer class="footer">
-      <span>AgriGuard Risk Planner <span class="footer-dot">·</span> Practical security for growing teams</span>
+      <span>AgriGuard Risk Planner <span class="footer-dot">·</span> Cyber resilience for transportation operations</span>
       <a href="README.md">How this MVP works</a>
     </footer>
 
@@ -178,6 +230,92 @@
         </div>
         <div class="dialog-actions"><button class="button button-quiet" id="cancel-dialog" type="button">Cancel</button><button class="button button-dark" type="submit">Add to inventory</button></div>
       </form>
+    </dialog>
+
+    <dialog id="node-dialog" class="asset-dialog">
+      <form id="node-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">NETWORK TOPOLOGY</p><h2>Add network node</h2></div><button class="icon-button" type="button" data-close="node-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro">Add a device, service, or infrastructure point. Choose its zone and link the systems or third parties it depends on.</p>
+        <div class="form-grid">
+          <label class="field">Node name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Dispatch server, gateway, Wi-Fi access point"></label>
+          <label class="field">Network zone<select name="zone"></select></label>
+          <label class="field field-full">What is this node used for? <span class="required">*</span><textarea name="purpose" required maxlength="220" rows="2" placeholder="What business or network function does it provide?"></textarea></label>
+          <label class="field field-full">Connects to / depends on
+            <select name="dependencies" multiple size="5"></select>
+            <span class="field-hint">Select systems or vendors. Connections are declared dependencies, not automatically detected traffic.</span>
+          </label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="node-dialog">Cancel</button><button class="button button-dark" type="submit">Save node</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="vendor-dialog" class="asset-dialog">
+      <form id="vendor-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">SUPPLY-CHAIN PARTNER</p><h2>Add third-party vendor</h2></div><button class="icon-button" type="button" data-close="vendor-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro">Record the service, connection boundary, information/access shared, and which internal systems rely on this provider.</p>
+        <div class="form-grid">
+          <label class="field">Vendor / partner name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Carrier, managed IT, warehouse provider"></label>
+          <label class="field">Connection / hosting zone<select name="zone"></select></label>
+          <label class="field field-full">Service provided <span class="required">*</span><input name="service" required maxlength="140" placeholder="What business capability or resource do they provide?"></label>
+          <label class="field field-full">What access do they have?<textarea name="access" maxlength="220" rows="2" placeholder="Remote support, portal account, API connection, physical facility access..."></textarea></label>
+          <label class="field field-full">What data or resources are shared?<textarea name="data" maxlength="220" rows="2" placeholder="Shipment details, customer information, system configuration, vehicles..."></textarea></label>
+          <label class="field">Business criticality<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>
+          <label class="field">Internal relationship owner<input name="contact" maxlength="70" placeholder="e.g. Fleet manager / operations lead"></label>
+          <label class="field field-full">Connected systems or nodes
+            <select name="dependencies" multiple size="5"></select>
+            <span class="field-hint">Choose the internal assets/nodes that use this vendor or service.</span>
+          </label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="vendor-dialog">Cancel</button><button class="button button-dark" type="submit">Save vendor</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="dispatch-dialog" class="asset-dialog">
+      <form id="dispatch-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">TRANSPORT WORKFLOW</p><h2>New dispatch task</h2></div><button class="icon-button" type="button" data-close="dispatch-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro">Record what is transported, the planned arrival, and the fallback if the assigned truck, route, or system is unavailable.</p>
+        <div class="form-grid">
+          <label class="field">Load / task name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Produce delivery 1042"></label>
+          <label class="field">Customer or process<input name="customer" maxlength="70" placeholder="e.g. North depot replenishment"></label>
+          <label class="field field-full">What is being transported? <span class="required">*</span><input name="cargo" required maxlength="120" placeholder="e.g. 18 pallets of refrigerated produce"></label>
+          <label class="field">Origin <span class="required">*</span><input name="origin" required maxlength="100" placeholder="City, address, or facility"></label>
+          <label class="field">Destination <span class="required">*</span><input name="destination" required maxlength="100" placeholder="City, address, or facility"></label>
+          <label class="field">Planned ETA <span class="required">*</span><input name="plannedEta" type="datetime-local" required></label>
+          <label class="field">Assigned truck / carrier<input name="vehicle" maxlength="60" placeholder="e.g. Truck 12 / Carrier A"></label>
+          <label class="field">Status<select name="status"><option value="scheduled">Scheduled</option><option value="in_transit">In transit</option><option value="delayed">Delayed</option><option value="delivered">Delivered</option><option value="canceled">Canceled</option></select></label>
+          <label class="field">Actual ETA / delivery time<input name="actualEta" type="datetime-local"></label>
+          <label class="field">Observed/estimated delay (minutes)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Leave blank if unknown"></label>
+          <label class="field field-full">Reason for cancellation or delay<textarea name="reason" maxlength="220" rows="2" placeholder="e.g. Vehicle breakdown; road closure; dispatch system unavailable"></textarea></label>
+          <label class="field field-full">Redundancy and fallback plan<textarea name="redundancy" maxlength="220" rows="2" placeholder="e.g. Backup refrigerated truck available from partner carrier"></textarea></label>
+          <label class="field field-full">Remediation / next operational step<textarea name="remediation" maxlength="220" rows="2" placeholder="e.g. Call alternate carrier and notify receiving depot"></textarea></label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="dispatch-dialog">Cancel</button><button class="button button-dark" type="submit">Save dispatch</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="incident-dialog" class="asset-dialog">
+      <form id="incident-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">PHYSICAL CONSEQUENCE &amp; RESPONSE</p><h2>Log an operational issue</h2></div><button class="icon-button" type="button" data-close="incident-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro">Record observed facts, consequence, and remediation status. Do not include sensitive personal or medical information. Use emergency procedures for immediate danger.</p>
+        <div class="form-grid">
+          <label class="field">Issue type<select name="type"><option>Vehicle breakdown</option><option>Road / weather disruption</option><option>Cargo damage or spoilage</option><option>Facility / equipment outage</option><option>Cyber-related operations outage</option><option>Safety near miss</option><option>Other</option></select></label>
+          <label class="field">Severity<select name="severity"><option value="low">Low — recovered with little impact</option><option value="medium">Medium — caused a service disruption</option><option value="high">High — major business or physical impact</option></select></label>
+          <label class="field field-full">What happened? <span class="required">*</span><textarea name="description" required maxlength="240" rows="2" placeholder="Describe the operational event and affected process"></textarea></label>
+          <label class="field">Related dispatch (optional)<select name="dispatchId" id="incident-dispatch"></select></label>
+          <label class="field">Remediation status<select name="status"><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select></label>
+          <label class="field">Delay impact (minutes, if known)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Reported duration"></label>
+          <label class="field">Estimated direct impact (CAD, if known)<input name="estimatedCost" type="number" min="0" step="0.01" placeholder="Optional, estimate only"></label>
+          <label class="field field-full">Remediation / prevention<textarea name="remediation" maxlength="240" rows="2" placeholder="Owner, repair, alternate carrier, route change, or prevention step"></textarea></label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="incident-dialog">Cancel</button><button class="button button-dark" type="submit">Save issue</button></div>
+      </form>
+    </dialog>
+
+    <dialog id="info-dialog" class="info-dialog">
+      <div class="dialog-heading"><div><p class="eyebrow" id="info-eyebrow">LEARN MORE</p><h2 id="info-title">Why this matters</h2></div><button class="icon-button" type="button" data-close="info-dialog" aria-label="Close dialog">×</button></div>
+      <div id="info-content" class="info-content"></div>
+      <div class="source-list" id="info-sources"></div>
+      <div class="dialog-actions"><button class="button button-dark" type="button" data-close="info-dialog">Got it</button></div>
     </dialog>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
   </body>
