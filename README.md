@@ -1,18 +1,28 @@
 # AgriGuard Risk Planner
 
-A small-business security planning MVP. It records the tools and technologies a business uses, why they are used, and a few security-relevant facts; then it turns gaps into a prioritized, explainable action plan. It is a planning aid, not a scanner, certification, or substitute for a security professional.
+A transportation-oriented small-business security and operational resilience MVP. It records technology, dispatch work, dependencies, and reported physical disruptions, then turns control gaps into an explainable action plan. It is a planning aid, not a live fleet system, scanner, certification, or substitute for a security professional.
 
 ## Run it
 
-Open `index.html` in a modern browser. There is no build step, server, account, or external dependency. Inventory data is stored in that browser's local storage and is not sent anywhere. Use **Reset demo** to restore the sample inventory.
+Open `index.html` in a modern browser. There is no build step, server, account, or external dependency. Inventory, dispatches, and physical issues are stored in that browser's local storage and are not sent to a server. Use **Reset demo** to restore sample records.
 
 ## MVP workflow
 
-1. **Discover:** inventory business applications, infrastructure, identity providers, endpoints, and data stores. For each, record its purpose, owner, business criticality, exposure, identity/access controls, backups, logging, and known dependencies.
-2. **Triage:** identify missing or weak controls with transparent rules. Rank findings by an indicative 0–100 score using control-gap severity, business criticality, and internet exposure. Review the evidence and assumptions; the score is a planning signal, not a quantified loss forecast.
-3. **Plan:** follow the concrete setup checklist on each finding, assign an owner, and prioritize critical/high risks first. The MVP maps suggested outcomes to a small curated set of NIST CSF 2.0 categories and subcategories.
-4. **Visualize:** inspect recorded dependencies in the asset graph and network zones. These are only as complete as the inventory; links are declared business/technical dependencies, not discovered traffic paths.
-5. **Review:** validate recommendations against the actual product, deployment, and business context before changing production settings. Track evidence and completion in a future version.
+1. **Discover resources:** inventory dispatch, identity, fleet, telematics, routing, vendor and cargo systems. Record what each tool enables, what data/access it handles, the process that depends on it, and a fallback if it is unavailable.
+2. **Follow operational work:** add dispatch tasks with cargo, origin/destination, planned and actual ETA, carrier, cancellation/delay reason, and redundancy/remediation. Route links open Google Maps directions using the entered endpoints.
+3. **Record physical consequences:** track vehicle, road/weather, cargo, facility, or safety issues and the status of their remediation. Use the issue history to see what remains open and what response was taken.
+4. **Learn why controls matter:** use the information popups for plain-language risk pathways, practical safeguards, and links to NIST, CISA, Transport Canada, and Google Maps documentation.
+5. **Prioritize cyber gaps:** deterministic rules rank missing/unknown controls using control gap, business criticality, and internet exposure. Scores are planning signals, not quantified loss forecasts.
+6. **Understand disruption statistics:** recorded delays are derived from entered arrival times or delay estimates; optional direct-impact figures are user-entered estimates. These are not audited financial values or proof of cyber causation.
+7. **Visualize the supply chain:** choose the asset graph, zone view, or combined topology. Add internal nodes (zone, purpose, links) and third parties (service, access/data, connection zone, criticality, internal owner). The expanded combined map uses three readable tiers—vendors/services, business assets, and network nodes—inside the selected network zones.
+
+## Transportation demo boundaries
+
+The demo has no live GPS, traffic feed, dispatch integration, driver notifications, embedded Google map, automated ETA calculation, or sensor data. Google Maps directions are opened in another tab; route legality, truck restrictions, road conditions, cargo requirements, and safe operating decisions must be checked by qualified dispatchers. The operational records are manually entered and browser-local. A single event may be represented by both a dispatch and a linked physical issue; avoid summing the same delay twice. Physical-issue delay is displayed for context but not added to dispatch-delay totals. Estimated incident costs are optional, unverified CAD values.
+
+Network nodes and vendor links are also entered manually and saved in browser-local storage. The **asset graph** shows technology assets; **network zones** groups assets, nodes, and vendors without drawing links; **full topology** places those records into vendor/service, business-asset, and network-node tiers and draws declared relationships. Click a map item or use its inventory card to edit it. Removing a node/vendor clears its declared links from other records. The diagram is an explanatory supply-chain/network view, not a discovered network topology or proof of actual access.
+
+For a centralized production system, add authenticated company accounts, a tenant-isolated backend/database, access controls, retention/audit policy, and approved integrations. Normalize updates from a TMS/dispatch, fleet/telematics, warehouse, maintenance, and incident systems into timestamped records that retain their source and confidence. Recompute deterministic risk rules when verified facts change; task completion should be owner-confirmed and keep its audit history. Label metrics as measured, source-reported, dispatcher-entered, or estimated, and avoid double-counting linked incidents. Never treat a model-generated summary as verified telemetry, financial accounting, safety advice, or proof an incident was cyber-caused.
 
 ## Development path
 
