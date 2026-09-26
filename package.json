@@ -1,0 +1,11 @@
+{
+  "name": "agriguard-risk-planner",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/personalize.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "latest"
+  }
+}
