@@ -232,7 +232,7 @@
           </label>
           <label class="field field-full">Technology logo URL (optional; HTTPS only)
             <input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg">
-            <span class="field-hint">Loads from the external image host. Leave blank to show a local initials mark.</span>
+            <span class="field-hint">Recognized brands use their logo automatically; your HTTPS URL overrides it. Logo images load from an external host. Unknown brands use initials.</span>
           </label>
           <label class="field">Type
             <select name="type"><option>Identity &amp; access</option><option>Cloud platform</option><option>Business application</option><option>Device / endpoint</option><option>Network / infrastructure</option><option>Data storage</option><option>Backup &amp; recovery</option><option>Other</option></select>
@@ -318,7 +318,7 @@
           <label class="field">Business domain<select name="domain"><option value="shared">Shared / crosses IT and OT</option><option value="it">Primarily IT</option><option value="ot">Primarily operational (OT)</option></select></label>
           <label class="field field-full">Service provided <span class="required">*</span><input name="service" required maxlength="140" placeholder="What business capability or resource do they provide?"></label>
           <label class="field field-full">Business consequence if this provider is unavailable <span class="required">*</span><textarea name="businessImpact" required maxlength="240" rows="2" placeholder="e.g. Without backup reefer capacity, a pickup may miss the cold-room receiving window"></textarea></label>
-          <label class="field field-full">Vendor logo URL (optional; HTTPS only)<input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg"><span class="field-hint">Logo loads from that external website. Leave blank to use an initials mark.</span></label>
+          <label class="field field-full">Vendor logo URL (optional; HTTPS only)<input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg"><span class="field-hint">Recognized company names use their logo automatically; this HTTPS URL overrides it. Logo images load from an external host. Unknown names use initials.</span></label>
           <label class="field field-full">What access do they have?<textarea name="access" maxlength="220" rows="2" placeholder="Remote support, portal account, API connection, physical facility access..."></textarea></label>
           <label class="field field-full">What data or resources are shared?<textarea name="data" maxlength="220" rows="2" placeholder="Shipment details, customer information, system configuration, vehicles..."></textarea></label>
           <label class="field">Business criticality<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>

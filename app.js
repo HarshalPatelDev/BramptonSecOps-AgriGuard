@@ -5,6 +5,44 @@ const NODE_STORAGE_KEY = 'agriguard-network-nodes-v1';
 const VENDOR_STORAGE_KEY = 'agriguard-vendors-v1';
 const NETWORK_ZONES = ['Cloud / SaaS', 'Perimeter / DMZ', 'Internal network', 'Restricted data zone', 'Remote / user devices', 'Not sure'];
 const CIA_LEVELS = { none: 0, low: 1, medium: 2, high: 3 };
+const BRAND_LOGOS = [
+  { pattern: /\b(?:microsoft\s*365|office\s*365|m365)\b/i, slug: 'microsoft' },
+  { pattern: /\b(?:microsoft|windows|azure|entra|sharepoint|onedrive|teams|intune)\b/i, slug: 'microsoft' },
+  { pattern: /\b(?:amazon web services|aws)\b/i, slug: 'amazonaws' },
+  { pattern: /\bgoogle workspace\b|\bg suite\b|\bgoogle\b/i, slug: 'google' },
+  { pattern: /\bcisco\b|\bmeraki\b/i, slug: 'cisco' },
+  { pattern: /\bfortinet\b/i, slug: 'fortinet' },
+  { pattern: /\bpalo alto networks\b/i, slug: 'paloaltonetworks' },
+  { pattern: /\bcrowdstrike\b/i, slug: 'crowdstrike' },
+  { pattern: /\bsophos\b/i, slug: 'sophos' },
+  { pattern: /\bvmware\b/i, slug: 'vmware' },
+  { pattern: /\bsap\b/i, slug: 'sap' },
+  { pattern: /\boracle\b/i, slug: 'oracle' },
+  { pattern: /\bsalesforce\b/i, slug: 'salesforce' },
+  { pattern: /\b(?:intuit|quickbooks)\b/i, slug: 'intuit' },
+  { pattern: /\bslack\b/i, slug: 'slack' },
+  { pattern: /\bzoom\b/i, slug: 'zoom' },
+  { pattern: /\bdropbox\b/i, slug: 'dropbox' },
+  { pattern: /\b(?:atlassian|jira|confluence)\b/i, slug: 'atlassian' },
+  { pattern: /\bgithub\b/i, slug: 'github' },
+  { pattern: /\badobe\b/i, slug: 'adobe' },
+  { pattern: /\bibm\b/i, slug: 'ibm' },
+  { pattern: /\bservicenow\b/i, slug: 'servicenow' },
+  { pattern: /\bokta\b/i, slug: 'okta' },
+  { pattern: /\bcloudflare\b/i, slug: 'cloudflare' },
+  { pattern: /\bshopify\b/i, slug: 'shopify' },
+  { pattern: /\bfedex\b/i, slug: 'fedex' },
+  { pattern: /\bups\b/i, slug: 'ups' },
+  { pattern: /\bdhl\b/i, slug: 'dhl' },
+  { pattern: /\bwalmart\b/i, slug: 'walmart' },
+  { pattern: /\bcostco\b/i, slug: 'costco' },
+  { pattern: /\bhoneywell\b/i, slug: 'honeywell' },
+  { pattern: /\bzebra technologies\b|\bzebra\b/i, slug: 'zebra' },
+  { pattern: /\bdell\b/i, slug: 'dell' },
+  { pattern: /\blenovo\b/i, slug: 'lenovo' },
+  { pattern: /\bapple\b|\bmacos\b|\biphone\b|\bipad\b/i, slug: 'apple' },
+  { pattern: /\bsamsung\b/i, slug: 'samsung' }
+];
 const PROCESS_STAGES = [
   ['supplier_pickup', 'Supplier pickup'], ['inbound', 'Inbound transport'],
   ['receiving', 'Receiving / quality check'], ['cold_storage', 'Cold storage'],
@@ -350,9 +388,15 @@ function logoColour(name) {
   return `hsl(${hash} 24% 92%)`;
 }
 
-function logoMark(name, className = 'brand-mark-small', logoUrl = '') {
-  const image = /^https:\/\/[^\s"'<>]+$/i.test(String(logoUrl || ''));
-  return `<span class="entity-logo ${className}" style="--logo-background:${logoColour(name)}" aria-hidden="true">${image ? `<img src="${escapeHtml(logoUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}<span ${image ? 'hidden' : ''}>${monogram(name)}</span></span>`;
+function resolvedLogoUrl(name, customUrl = '') {
+  if (/^https:\/\/[^\s"'<>]+$/i.test(String(customUrl || ''))) return customUrl;
+  const brand = BRAND_LOGOS.find(candidate => candidate.pattern.test(String(name || '')));
+  return brand ? `https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/${brand.slug}.svg` : '';
+}
+
+function logoMark(name, className = 'brand-mark-small', customUrl = '', searchableText = name) {
+  const url = resolvedLogoUrl(searchableText, customUrl);
+  return `<span class="entity-logo ${className}" style="--logo-background:${logoColour(name)}" aria-hidden="true">${url ? `<img src="${escapeHtml(url)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}<span ${url ? 'hidden' : ''}>${monogram(name)}</span></span>`;
 }
 
 function businessDomain(item) {
@@ -456,7 +500,7 @@ function renderAssets() {
     const deps = asset.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
     return `<article class="asset-card">
       <div class="asset-card-top">
-        ${logoMark(asset.name, 'asset-logo', asset.logoUrl)}
+        ${logoMark(asset.name, 'asset-logo', asset.logoUrl, `${asset.name} ${asset.type} ${asset.purpose}`)}
         <div class="asset-heading"><h3 class="asset-name">${escapeHtml(asset.name)}</h3><span class="asset-type">${escapeHtml(asset.type)}</span></div>
         <button class="asset-menu" type="button" data-action="edit" data-id="${escapeHtml(asset.id)}" aria-label="Edit ${escapeHtml(asset.name)}">✎</button>
       </div>
@@ -472,6 +516,7 @@ function renderAssets() {
       </div>
     </article>`;
   }).join('');
+  attachLogoFallbacks(list);
 }
 
 function topologyItems() {
@@ -502,7 +547,7 @@ function renderVendors() {
   list.innerHTML = vendors.map(vendor => {
     const links = vendor.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
     return `<article class="vendor-card">
-      <div class="vendor-card-heading"><div class="vendor-identity">${logoMark(vendor.name, 'vendor-logo', vendor.logoUrl)}<div><span class="vendor-type-label">THIRD-PARTY PROVIDER</span><h3>${escapeHtml(vendor.name)}</h3></div></div><div class="vendor-actions"><button class="asset-menu" type="button" data-edit-vendor="${escapeHtml(vendor.id)}" aria-label="Edit ${escapeHtml(vendor.name)}">✎</button><button class="vendor-delete" type="button" data-remove-vendor="${escapeHtml(vendor.id)}">Remove</button></div></div>
+      <div class="vendor-card-heading"><div class="vendor-identity">${logoMark(vendor.name, 'vendor-logo', vendor.logoUrl, `${vendor.name} ${vendor.service} ${vendor.access}`)}<div><span class="vendor-type-label">THIRD-PARTY PROVIDER</span><h3>${escapeHtml(vendor.name)}</h3></div></div><div class="vendor-actions"><button class="asset-menu" type="button" data-edit-vendor="${escapeHtml(vendor.id)}" aria-label="Edit ${escapeHtml(vendor.name)}">✎</button><button class="vendor-delete" type="button" data-remove-vendor="${escapeHtml(vendor.id)}">Remove</button></div></div>
       <p class="vendor-service">${escapeHtml(vendor.service)}</p>
       <span class="tag domain-tag">${escapeHtml(domainLabel(businessDomain(vendor)))}</span>
       <div class="vendor-details"><span><b>Connection zone</b>${escapeHtml(vendor.zone)}</span><span><b>Business criticality</b>${escapeHtml(capitalize(vendor.criticality || 'medium'))}</span><span><b>Internal contact</b>${escapeHtml(vendor.contact || 'Not assigned')}</span></div>
@@ -512,6 +557,7 @@ function renderVendors() {
       <p class="vendor-fact"><strong>Connected to:</strong> ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'No linked systems or nodes'}</p>
     </article>`;
   }).join('');
+  attachLogoFallbacks(list);
 }
 
 function renderNodes() {
@@ -522,8 +568,9 @@ function renderNodes() {
   }
   list.innerHTML = networkNodes.map(node => {
     const links = node.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
-    return `<article class="node-card">${logoMark(node.name, 'node-logo')}<div class="node-card-body"><h4>${escapeHtml(node.name)}</h4><span>${escapeHtml(node.zone)} · ${escapeHtml(domainLabel(businessDomain(node)))}</span><p>${escapeHtml(node.purpose)}</p>${node.businessImpact ? `<p class="entity-impact"><strong>Consequence:</strong> ${escapeHtml(node.businessImpact)}</p>` : ''}<small>Connected to: ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'None recorded'}</small></div><button class="asset-menu" type="button" data-edit-node="${escapeHtml(node.id)}" aria-label="Edit ${escapeHtml(node.name)}">✎</button><button class="vendor-delete" type="button" data-remove-node="${escapeHtml(node.id)}">Remove</button></article>`;
+    return `<article class="node-card">${logoMark(node.name, 'node-logo', '', `${node.name} ${node.purpose}`)}<div class="node-card-body"><h4>${escapeHtml(node.name)}</h4><span>${escapeHtml(node.zone)} · ${escapeHtml(domainLabel(businessDomain(node)))}</span><p>${escapeHtml(node.purpose)}</p>${node.businessImpact ? `<p class="entity-impact"><strong>Consequence:</strong> ${escapeHtml(node.businessImpact)}</p>` : ''}<small>Connected to: ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'None recorded'}</small></div><button class="asset-menu" type="button" data-edit-node="${escapeHtml(node.id)}" aria-label="Edit ${escapeHtml(node.name)}">✎</button><button class="vendor-delete" type="button" data-remove-node="${escapeHtml(node.id)}">Remove</button></article>`;
   }).join('');
+  attachLogoFallbacks(list);
 }
 
 function renderFindings(findings) {
@@ -710,7 +757,7 @@ function renderDispatches() {
     const statusClass = ['delayed', 'canceled'].includes(task.status) ? 'issue' : task.status === 'delivered' ? 'resolved' : '';
     const delay = taskDelayMinutes(task);
     return `<article class="dispatch-card">
-      <div class="dispatch-top"><div class="dispatch-identity">${logoMark(task.customer || task.name, 'dispatch-logo', task.logoUrl)}<div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
+      <div class="dispatch-top"><div class="dispatch-identity">${logoMark(task.customer || task.name, 'dispatch-logo', task.logoUrl, `${task.customer || ''} ${task.name}`)}<div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
       <p class="cargo-line"><strong>Ingredient / product:</strong> ${escapeHtml(task.cargo)}</p>
       <div class="dispatch-stage-line"><span>${escapeHtml(stageName(task.stage))}</span>${task.productValue ? `<strong>${escapeHtml(money(task.productValue))} tracked value</strong>` : '<strong>Value not entered</strong>'}</div>
       <div class="route-line"><span>${escapeHtml(task.origin)}</span><span class="route-arrow" aria-hidden="true">→</span><span>${escapeHtml(task.destination)}</span></div>
@@ -851,7 +898,8 @@ function renderDiagram() {
     const detail = detailText.length > 31 ? `${detailText.slice(0, 30)}…` : detailText;
     const kindLabel = item.kind === 'vendor' ? 'VENDOR' : item.kind === 'node' ? 'NODE' : 'ASSET';
     const domain = domainLabel(businessDomain(item));
-    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)}, ${domain}, in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${domain}; ${escapeHtml(item.zone)}).${escapeHtml(impactText)}</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><circle cx="${x + 14}" cy="${y + 16}" r="4" fill="${dot}"/><text x="${x + 25}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 13}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${domain} · ${escapeHtml(detail)}</text></g>`;
+    const logoUrl = resolvedLogoUrl(`${item.name} ${item.type || ''} ${item.service || ''} ${item.purpose || ''}`, item.logoUrl);
+    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)}, ${domain}, in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${domain}; ${escapeHtml(item.zone)}).${escapeHtml(impactText)}</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><rect x="${x + 7}" y="${y + 8}" width="20" height="20" rx="4" fill="#fff" stroke="#e6ebe7"/><text x="${x + 17}" y="${y + 21}" text-anchor="middle" fill="#52685a" font-size="8" font-family="Segoe UI, sans-serif" font-weight="700">${monogram(item.name)}</text>${logoUrl ? `<image class="topology-logo" href="${escapeHtml(logoUrl)}" x="${x + 8}" y="${y + 9}" width="18" height="18" preserveAspectRatio="xMidYMid meet"/>` : ''}<text x="${x + 34}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 34}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${domain} · ${escapeHtml(detail)}</text></g>`;
   });
   if (activeMap !== 'network' && items.every(item => !item.dependencies?.length)) {
     markup += `<text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#94a098" font-size="9" font-family="Segoe UI, sans-serif">No dependencies recorded yet — add links when editing a node, technology, or vendor.</text>`;
