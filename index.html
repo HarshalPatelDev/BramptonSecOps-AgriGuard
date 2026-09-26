@@ -3,31 +3,26 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#102b25">
-    <title>AgriGuard | Risk Planner</title>
+    <meta name="theme-color" content="#ffffff">
+    <title>Overview | AgriGuard</title>
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="topbar">
-      <a class="brand" href="#" aria-label="AgriGuard home">
-        <span class="brand-mark" aria-hidden="true">A</span>
-        <span>AgriGuard<span class="brand-sub">SECURITY PLANNER</span></span>
-      </a>
-      <div class="topbar-right">
-        <span class="local-badge"><span></span> Saved on this device</span>
-        <a class="button button-quiet" href="login.html">Sign in</a>
-        <button class="button button-quiet" id="reset-demo" type="button">Reset demo</button>
-      </div>
+      <a class="brand" href="index.html" aria-label="AgriGuard home"><span class="brand-mark" aria-hidden="true">A</span><span>AgriGuard<span class="brand-sub">SECURITY PLANNER</span></span></a>
+      <nav class="primary-nav" aria-label="Main navigation"><a class="nav-link active" href="index.html" aria-current="page">Overview</a><a class="nav-link" href="inventory.html">Inventory</a><a class="nav-link" href="risks.html">Risk plan</a><a class="nav-link" href="connections.html">Connections</a><a class="nav-link" href="operations.html">Operations</a></nav>
+      <div class="topbar-right"><span class="local-badge"><span></span> Saved on this device</span><a class="button button-quiet" href="login.html">Sign in</a><button class="button button-quiet" id="reset-demo" type="button">Reset demo</button></div>
     </header>
-
-    <main>
+    <main id="main-content" tabindex="-1">
+      <div class="page-view" id="page-home" aria-labelledby="home-title">
       <section class="hero">
         <div class="hero-copy">
           <p class="eyebrow">FOOD SUPPLY-CHAIN OPERATIONS</p>
-          <h1>From fresh ingredients<br><span>to grocery shelves.</span></h1>
+          <h1 id="home-title">Protect what keeps<br><span>your business moving.</span></h1>
           <p class="hero-description">Follow ingredients from supplier to receiving, cold storage, processing, and grocery delivery. Connect cyber safeguards to operational continuity and product value.</p>
-          <a class="button button-light" href="#operations">Explore the food supply chain <span aria-hidden="true">↓</span></a>
+          <a class="button button-light" href="operations.html">Explore the food supply chain <span aria-hidden="true">→</span></a>
         </div>
         <div class="hero-art" aria-hidden="true">
           <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -40,308 +35,24 @@
       <section class="notice" aria-label="Privacy and scope">
         <span class="notice-icon" aria-hidden="true">✓</span>
         <p><strong>Demo data stays in this browser.</strong> No live cold-chain sensors, dispatch, accounting, or system integrations. Product loss and financial values are illustrative records entered by you.</p>
-        <span class="framework-chip">NIST CSF 2.0 aligned</span>
+        <span class="framework-chip">Simple steps for a safer business</span>
       </section>
 
       <section class="summary-grid" id="summary" aria-label="Assessment summary"></section>
-
-      <section class="section-block" id="inventory">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">01 / DISCOVER</p>
-            <h2>Your technology inventory</h2>
-            <p class="section-description">Tell us what you use, why you use it, and how it is protected. Unknown is a useful answer—it shows where to investigate.</p>
-          </div>
-          <button class="button button-dark" id="add-asset-top" type="button"><span aria-hidden="true">＋</span> Add a technology</button>
-        </div>
-        <div class="inventory-layout">
-          <div class="asset-list" id="asset-list" aria-live="polite"></div>
-          <aside class="panel inventory-tip">
-            <span class="tip-icon" aria-hidden="true">✳</span>
-            <h3>What should I include?</h3>
-            <p>Think beyond software: identity and email, cloud platforms, laptops, networks, finance tools, customer systems, and where important data lives.</p>
-            <div class="tip-line"></div>
-            <p class="small-muted">Never enter passwords, recovery codes, API keys, or other secrets here.</p>
-          </aside>
+      <section class="home-workflow" aria-labelledby="workflow-title">
+        <div class="section-heading"><div><p class="eyebrow">YOUR RISK WORKFLOW</p><h2 id="workflow-title">A clear path from discovery to action</h2><p class="section-description">Build a picture of your operation, understand the most important risks, then see how systems and physical processes depend on one another.</p></div></div>
+        <div class="workflow-grid">
+          <a class="workflow-card" href="inventory.html"><span class="workflow-number">01</span><span class="workflow-card-title">Identify your systems</span><span class="workflow-card-copy">List the technologies, equipment, services, suppliers, and vendors your business relies on.</span><span class="workflow-action">Open inventory <span aria-hidden="true">→</span></span></a>
+          <a class="workflow-card" href="risks.html"><span class="workflow-number">02</span><span class="workflow-card-title">See what needs attention</span><span class="workflow-card-copy">Understand possible disruptions and follow practical steps to reduce them.</span><span class="workflow-action">Review next steps <span aria-hidden="true">→</span></span></a>
+          <a class="workflow-card" href="connections.html"><span class="workflow-number">03</span><span class="workflow-card-title">Map dependencies</span><span class="workflow-card-copy">Explore how vendors, IT, operational technology, and physical processes connect.</span><span class="workflow-action">Explore connections <span aria-hidden="true">→</span></span></a>
+          <a class="workflow-card" href="operations.html"><span class="workflow-number">04</span><span class="workflow-card-title">Track operations</span><span class="workflow-card-copy">Record shipment stages, physical issues, product loss, and operational impact.</span><span class="workflow-action">Open operations <span aria-hidden="true">→</span></span></a>
         </div>
       </section>
-
-      <section class="section-block operations-section" id="operations">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">02 / INGREDIENT-TO-GROCERY OPERATIONS</p>
-            <h2>What is moving, where is it in the process?</h2>
-            <p class="section-description">Follow perishable ingredients through supplier pickup, receiving, cold storage, processing, and grocery delivery. Record ETAs, product value, spoilage, fallback capacity, and remediation.</p>
-          </div>
-          <div class="operations-heading-actions">
-            <button class="button button-quiet" type="button" data-info="centralized">Central system design</button>
-            <button class="button button-quiet" type="button" data-info="operations">How this works <span aria-hidden="true">ⓘ</span></button>
-          </div>
-        </div>
-        <div class="operations-metrics" id="operations-metrics" aria-label="Transport disruption statistics"></div>
-        <div class="operations-layout">
-          <div class="operations-column">
-            <div class="subsection-heading">
-              <div><h3>Inbound, processing &amp; outbound tasks</h3><p>Record product, process stage, arrival, value, disruption, and fallback plan.</p></div>
-              <button class="button button-dark" id="add-dispatch" type="button">＋ Add shipment / batch</button>
-            </div>
-            <div class="dispatch-list" id="dispatch-list" aria-live="polite"></div>
-          </div>
-          <aside class="physical-column">
-            <div class="subsection-heading">
-              <div><h3>Physical issues &amp; remediation</h3><p>Track a real-world consequence and who is addressing it.</p></div>
-              <button class="button button-quiet" id="add-incident" type="button">＋ Log issue</button>
-            </div>
-            <div class="incident-list" id="incident-list" aria-live="polite"></div>
-          </aside>
-        </div>
-        <div class="operations-footnote"><strong>Operational learning:</strong> Supplier and transport systems coordinate ingredient orders; receiving records lot and quantity; temperature-controlled storage protects perishable stock; processing converts inputs into batches; outbound dispatch delivers finished products to grocery stores. Incorrect lot, inventory, temperature, or dispatch data can cause spoilage, rework, delayed production, or missed deliveries. Demo records are illustrative, not live sensors or food-safety advice.</div>
-      </section>
-
-      <section class="section-block finance-section" id="finance">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">03 / FINANCIAL IMPACT &amp; PRODUCT LOSS</p>
-            <h2>What disruption costs the operation</h2>
-            <p class="section-description">Connect reported product loss, salvage, disposal, recovery, and delay costs to the linked shipment or batch. Separate tracked product value from realized loss.</p>
-          </div>
-          <button class="button button-quiet" type="button" data-info="finance">How are these totals calculated? ⓘ</button>
-        </div>
-        <div class="finance-metrics" id="finance-metrics" aria-label="Supply-chain finance metrics"></div>
-        <div class="finance-grid">
-          <div class="finance-panel">
-            <div class="finance-panel-heading"><div><h3>Product value by process stage</h3><p>Open-record values by stage; linked goods may be counted at more than one stage.</p></div></div>
-            <div class="stage-chart" id="stage-chart"></div>
-          </div>
-          <div class="finance-panel loss-panel">
-            <div class="finance-panel-heading"><div><h3>Disruption cost breakdown</h3><p>Reported loss less salvage, plus added operating costs.</p></div></div>
-            <div class="loss-breakdown" id="loss-breakdown"></div>
-            <p class="finance-disclaimer">Illustrative management estimates only. Not accounting, insurance valuation, food-safety determination, or verified cyber-loss attribution.</p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section-block risk-section" id="priorities">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">04 / PRIORITIZE CYBERSECURITY GAPS</p>
-            <h2>Risk priorities</h2>
-            <p class="section-description">See how missing safeguards could disrupt a business process, and why each practical action reduces that exposure. Scores are indicative, not a prediction of loss.</p>
-          </div>
-          <span class="live-label"><span></span> Updates as you edit</span>
-        </div>
-        <div class="risk-toolbar">
-          <div class="filter-tabs" role="group" aria-label="Filter findings">
-            <button class="filter-tab active" data-filter="all" type="button">All <span id="count-all">0</span></button>
-            <button class="filter-tab" data-filter="high" type="button">High priority <span id="count-high">0</span></button>
-            <button class="filter-tab" data-filter="medium" type="button">Medium <span id="count-medium">0</span></button>
-            <button class="filter-tab" data-filter="low" type="button">Low priority <span id="count-low">0</span></button>
-          </div>
-          <span class="sort-caption">Indicative: control gap + business criticality + exposure · High 75+ · Medium 52–74</span>
-        </div>
-        <div class="finding-list" id="finding-list" aria-live="polite"></div>
-      </section>
-
-      <section class="section-block map-section" id="maps">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">05 / SUPPLY CHAIN &amp; NETWORK TOPOLOGY</p>
-            <h2>How your operations connect</h2>
-            <p class="section-description">Explore connected assets, network zones, internal nodes, vendors, and the business services they support. Add nodes and third parties to build this map around your operation.</p>
-          </div>
-        </div>
-        <div class="node-directory">
-          <div class="node-directory-heading"><div><h3>Network node inventory</h3><p>Click a node on the map or edit it here to update its zone, purpose, and dependencies.</p></div><button class="button button-dark" id="add-node" type="button">＋ Add node</button></div>
-          <div class="node-list" id="node-list" aria-live="polite"></div>
-        </div>
-        <div class="map-heading-tools">
-          <div class="map-switch" role="tablist" aria-label="Diagram view">
-            <button class="map-tab active" id="asset-map-tab" role="tab" aria-selected="true" type="button">Asset graph</button>
-            <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" type="button">Network zones</button>
-            <button class="map-tab" id="topology-map-tab" role="tab" aria-selected="false" type="button">Full topology</button>
-          </div>
-        </div>
-        <div class="panel map-panel">
-          <div class="map-legend"><span><i class="legend-dot dot-app"></i> Application / asset</span><span><i class="legend-dot dot-infra"></i> Node / infrastructure</span><span><i class="legend-dot dot-vendor"></i> Vendor / third party</span><span><i class="legend-line"></i> Declared dependency</span></div>
-          <div class="diagram-wrap" id="diagram" role="tabpanel" aria-label="Asset relationship diagram"></div>
-          <p class="map-footnote" id="map-footnote">Arrows indicate declared dependencies, not verified network traffic.</p>
-        </div>
-      </section>
-
-      <section class="section-block vendor-section" id="vendors">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">06 / THIRD-PARTY DEPENDENCIES</p>
-            <h2>Vendors and business partners</h2>
-            <p class="section-description">Record the service they provide, the network zone their connection lands in, what they access, and the assets or nodes that depend on them.</p>
-          </div>
-          <button class="button button-dark" id="add-vendor" type="button">＋ Add vendor</button>
-        </div>
-        <div class="vendor-list" id="vendor-list" aria-live="polite"></div>
-      </section>
-
-      <section class="section-block method-section" id="method">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">07 / PUT THE PLAN TO WORK</p>
-            <h2>From assessment to stronger controls</h2>
-            <p class="section-description">Start with a useful inventory and build a repeatable security practice as your business grows.</p>
-          </div>
-        </div>
-        <div class="process-grid">
-          <article class="process-card"><span>01</span><h3>Discover</h3><p>Inventory key systems, their purpose, owners, data, and dependencies.</p></article>
-          <article class="process-card"><span>02</span><h3>Triage</h3><p>Use consistent rules to surface access, exposure, backup, and visibility gaps.</p></article>
-          <article class="process-card"><span>03</span><h3>Act</h3><p>Assign the highest-priority tasks, validate vendor guidance, and track evidence.</p></article>
-          <article class="process-card agent-card"><span class="later-tag">LATER</span><h3>Clarify with AI</h3><p>A future triage assistant can clarify ambiguous answers. People confirm; deterministic rules keep scoring and control advice explainable.</p></article>
-        </div>
-        <div class="framework-note"><strong>How to think about NIST CSF:</strong> Recommendations are mapped to selected CSF 2.0 outcomes. They are not a complete framework assessment or proof of compliance. Use product documentation and qualified security advice for implementation decisions.</div>
-      </section>
+      </div>
     </main>
+    <footer class="footer"><span>AgriGuard Risk Planner <span class="footer-dot">?</span> Cyber resilience for food supply chains</span><a href="README.md">How this MVP works</a></footer>
 
-    <footer class="footer">
-      <span>AgriGuard Risk Planner <span class="footer-dot">·</span> Cyber resilience for food supply chains</span>
-      <a href="README.md">How this MVP works</a>
-    </footer>
-
-    <dialog id="asset-dialog" class="asset-dialog">
-      <form id="asset-form" method="dialog">
-        <div class="dialog-heading">
-          <div><p class="eyebrow">TECHNOLOGY INVENTORY</p><h2>Add a technology</h2></div>
-          <button class="icon-button" id="close-dialog" type="button" aria-label="Close dialog">×</button>
-        </div>
-        <p class="dialog-intro">Describe what this system does and the safeguards you have in place. Choose “Not sure” if you need to check.</p>
-        <div class="form-grid">
-          <label class="field field-full">Technology or service name <span class="required">*</span>
-            <input name="name" required maxlength="70" placeholder="e.g. Microsoft 365, AWS, payroll system">
-          </label>
-          <label class="field">Type
-            <select name="type"><option>Identity &amp; access</option><option>Cloud platform</option><option>Business application</option><option>Device / endpoint</option><option>Network / infrastructure</option><option>Data storage</option><option>Backup &amp; recovery</option><option>Other</option></select>
-          </label>
-          <label class="field">Business criticality
-            <select name="criticality"><option value="high">High — outage would stop key work</option><option value="medium" selected>Medium — important, workaround exists</option><option value="low">Low — limited business impact</option></select>
-          </label>
-          <label class="field field-full">What do you use it for, and why?
-            <textarea name="purpose" required maxlength="240" rows="2" placeholder="e.g. Stores customer orders and supports online sales"></textarea>
-          </label>
-          <label class="field">Business owner or team
-            <input name="owner" maxlength="60" placeholder="e.g. Operations">
-          </label>
-          <label class="field">Internet exposure
-            <select name="exposure"><option value="no">Not directly internet-facing</option><option value="yes">Accessible from the internet</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Default admin credentials
-            <select name="admin"><option value="changed">Changed; unique credentials are used</option><option value="shared">Shared/default credentials may be in use</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Multi-factor authentication (MFA)
-            <select name="mfa"><option value="yes">Enabled for users and administrators</option><option value="partial">Enabled for some accounts</option><option value="no">Not enabled</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Named roles / groups and least privilege
-            <select name="access"><option value="yes">Defined roles or groups; access is limited</option><option value="no">Permissions are broad or not grouped</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Backups and recovery
-            <select name="backups"><option value="yes">Backups are configured and restore-tested</option><option value="partial">Backups exist; restore not recently tested</option><option value="no">No known backup / recovery plan</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Security logs and review
-            <select name="logging"><option value="yes">Security logs are enabled and reviewed</option><option value="partial">Some logs exist; review is irregular</option><option value="no">No known logging or review</option><option value="unknown" selected>Not sure</option></select>
-          </label>
-          <label class="field">Where is it hosted?
-            <select name="zone"><option value="Cloud / SaaS">Cloud / SaaS</option><option value="Internal network">Internal network</option><option value="Restricted data zone">Restricted data zone</option><option value="Perimeter / DMZ">Perimeter / DMZ</option><option value="Remote / user devices">Remote / user devices</option><option value="Not sure">Not sure</option></select>
-          </label>
-          <label class="field field-full">Depends on other inventoried systems
-            <select name="dependencies" id="dependencies" multiple size="3" aria-describedby="dependency-hint"></select>
-            <span class="field-hint" id="dependency-hint">Use Ctrl (Windows) or Command (Mac) to select more than one. For example, an app may depend on your identity provider.</span>
-          </label>
-        </div>
-        <div class="dialog-actions"><button class="button button-quiet" id="cancel-dialog" type="button">Cancel</button><button class="button button-dark" type="submit">Add to inventory</button></div>
-      </form>
-    </dialog>
-
-    <dialog id="node-dialog" class="asset-dialog">
-      <form id="node-form" method="dialog">
-        <div class="dialog-heading"><div><p class="eyebrow">NETWORK TOPOLOGY</p><h2>Add network node</h2></div><button class="icon-button" type="button" data-close="node-dialog" aria-label="Close dialog">×</button></div>
-        <p class="dialog-intro">Add a device, service, or infrastructure point. Choose its zone and link the systems or third parties it depends on.</p>
-        <div class="form-grid">
-          <label class="field">Node name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Dispatch server, gateway, Wi-Fi access point"></label>
-          <label class="field">Network zone<select name="zone"></select></label>
-          <label class="field field-full">What is this node used for? <span class="required">*</span><textarea name="purpose" required maxlength="220" rows="2" placeholder="What business or network function does it provide?"></textarea></label>
-          <label class="field field-full">Connects to / depends on
-            <select name="dependencies" multiple size="5"></select>
-            <span class="field-hint">Select systems or vendors. Connections are declared dependencies, not automatically detected traffic.</span>
-          </label>
-        </div>
-        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="node-dialog">Cancel</button><button class="button button-dark" type="submit">Save node</button></div>
-      </form>
-    </dialog>
-
-    <dialog id="vendor-dialog" class="asset-dialog">
-      <form id="vendor-form" method="dialog">
-        <div class="dialog-heading"><div><p class="eyebrow">SUPPLY-CHAIN PARTNER</p><h2>Add third-party vendor</h2></div><button class="icon-button" type="button" data-close="vendor-dialog" aria-label="Close dialog">×</button></div>
-        <p class="dialog-intro">Record the service, connection boundary, information/access shared, and which internal systems rely on this provider.</p>
-        <div class="form-grid">
-          <label class="field">Vendor / partner name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Carrier, managed IT, warehouse provider"></label>
-          <label class="field">Connection / hosting zone<select name="zone"></select></label>
-          <label class="field field-full">Service provided <span class="required">*</span><input name="service" required maxlength="140" placeholder="What business capability or resource do they provide?"></label>
-          <label class="field field-full">What access do they have?<textarea name="access" maxlength="220" rows="2" placeholder="Remote support, portal account, API connection, physical facility access..."></textarea></label>
-          <label class="field field-full">What data or resources are shared?<textarea name="data" maxlength="220" rows="2" placeholder="Shipment details, customer information, system configuration, vehicles..."></textarea></label>
-          <label class="field">Business criticality<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>
-          <label class="field">Internal relationship owner<input name="contact" maxlength="70" placeholder="e.g. Fleet manager / operations lead"></label>
-          <label class="field field-full">Connected systems or nodes
-            <select name="dependencies" multiple size="5"></select>
-            <span class="field-hint">Choose the internal assets/nodes that use this vendor or service.</span>
-          </label>
-        </div>
-        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="vendor-dialog">Cancel</button><button class="button button-dark" type="submit">Save vendor</button></div>
-      </form>
-    </dialog>
-
-    <dialog id="dispatch-dialog" class="asset-dialog">
-      <form id="dispatch-form" method="dialog">
-        <div class="dialog-heading"><div><p class="eyebrow">TRANSPORT WORKFLOW</p><h2>New dispatch task</h2></div><button class="icon-button" type="button" data-close="dispatch-dialog" aria-label="Close dialog">×</button></div>
-        <p class="dialog-intro">Record what is transported, the planned arrival, and the fallback if the assigned truck, route, or system is unavailable.</p>
-        <div class="form-grid">
-          <label class="field">Shipment / batch name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Spinach lot 26-104"></label>
-          <label class="field">Supplier / grocery customer<input name="customer" maxlength="70" placeholder="e.g. Green Acres Farm / North Grocery"></label>
-          <label class="field field-full">Ingredient or finished product <span class="required">*</span><input name="cargo" required maxlength="120" placeholder="e.g. 240 crates of romaine lettuce"></label>
-          <label class="field">Origin / process start <span class="required">*</span><input name="origin" required maxlength="100" placeholder="Farm, receiving dock, cold room"></label>
-          <label class="field">Destination / next stage <span class="required">*</span><input name="destination" required maxlength="100" placeholder="Processor, packaging line, grocery store"></label>
-          <label class="field">Supply-chain stage<select name="stage"><option value="supplier_pickup">Supplier pickup</option><option value="inbound">Inbound transport</option><option value="receiving">Receiving / quality check</option><option value="cold_storage">Cold storage</option><option value="processing">Processing / packaging</option><option value="outbound">Outbound transport</option><option value="grocery_delivery">Grocery delivery</option><option value="completed">Completed</option></select></label>
-          <label class="field">Tracked product value (CAD)<input name="productValue" type="number" min="0" step="0.01" placeholder="Estimated value of this load / batch"></label>
-          <label class="field">Planned ETA <span class="required">*</span><input name="plannedEta" type="datetime-local" required></label>
-          <label class="field">Truck / carrier / production line<input name="vehicle" maxlength="60" placeholder="e.g. Reefer truck 12 / Line 2"></label>
-          <label class="field">Status<select name="status"><option value="scheduled">Scheduled</option><option value="in_transit">In transit</option><option value="processing">Processing</option><option value="delayed">Delayed</option><option value="delivered">Delivered / stage complete</option><option value="canceled">Canceled</option></select></label>
-          <label class="field">Actual ETA / delivery time<input name="actualEta" type="datetime-local"></label>
-          <label class="field">Observed/estimated delay (minutes)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Leave blank if unknown"></label>
-          <label class="field field-full">Reason for cancellation or delay<textarea name="reason" maxlength="220" rows="2" placeholder="e.g. Vehicle breakdown; road closure; dispatch system unavailable"></textarea></label>
-          <label class="field field-full">Redundancy and fallback plan<textarea name="redundancy" maxlength="220" rows="2" placeholder="e.g. Backup refrigerated truck available from partner carrier"></textarea></label>
-          <label class="field field-full">Remediation / next operational step<textarea name="remediation" maxlength="220" rows="2" placeholder="e.g. Call alternate carrier and notify receiving depot"></textarea></label>
-        </div>
-        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="dispatch-dialog">Cancel</button><button class="button button-dark" type="submit">Save dispatch</button></div>
-      </form>
-    </dialog>
-
-    <dialog id="incident-dialog" class="asset-dialog">
-      <form id="incident-form" method="dialog">
-        <div class="dialog-heading"><div><p class="eyebrow">PHYSICAL CONSEQUENCE &amp; RESPONSE</p><h2>Log an operational issue</h2></div><button class="icon-button" type="button" data-close="incident-dialog" aria-label="Close dialog">×</button></div>
-        <p class="dialog-intro">Record observed facts, consequence, and remediation status. Do not include sensitive personal or medical information. Use emergency procedures for immediate danger.</p>
-        <div class="form-grid">
-          <label class="field">Issue type<select name="type"><option>Temperature excursion / spoilage</option><option>Ingredient contamination hold</option><option>Supplier disruption</option><option>Vehicle breakdown</option><option>Road / weather disruption</option><option>Processing line / cold-room outage</option><option>Packaging / labeling error</option><option>Cyber-related operations outage</option><option>Safety near miss</option><option>Other</option></select></label>
-          <label class="field">Severity<select name="severity"><option value="low">Low — recovered with little impact</option><option value="medium">Medium — caused a service disruption</option><option value="high">High — major business or physical impact</option></select></label>
-          <label class="field field-full">What happened? <span class="required">*</span><textarea name="description" required maxlength="240" rows="2" placeholder="Describe the operational event and affected process"></textarea></label>
-          <label class="field">Related dispatch (optional)<select name="dispatchId" id="incident-dispatch"></select></label>
-          <label class="field">Remediation status<select name="status"><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select></label>
-          <label class="field">Delay impact (minutes, if known)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Reported duration"></label>
-          <label class="field">Gross product loss (CAD)<input name="productLoss" type="number" min="0" step="0.01" placeholder="Value written off / spoiled"></label>
-          <label class="field">Salvage / recovered value (CAD)<input name="salvageValue" type="number" min="0" step="0.01" placeholder="Recovered or reworked product value"></label>
-          <label class="field">Disposal / rework cost (CAD)<input name="disposalCost" type="number" min="0" step="0.01" placeholder="Additional direct cost"></label>
-          <label class="field">Delay / replacement cost (CAD)<input name="delayCost" type="number" min="0" step="0.01" placeholder="Expedite, replacement transport, penalties"></label>
-          <label class="field">Other direct cost (CAD)<input name="otherCost" type="number" min="0" step="0.01" placeholder="Optional additional cost"></label>
-          <label class="field field-full">Remediation / prevention<textarea name="remediation" maxlength="240" rows="2" placeholder="Owner, repair, alternate carrier, route change, or prevention step"></textarea></label>
-        </div>
-        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="incident-dialog">Cancel</button><button class="button button-dark" type="submit">Save issue</button></div>
-      </form>
-    </dialog>
-
-    <dialog id="info-dialog" class="info-dialog">
+    <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title" aria-describedby="info-content">
       <div class="dialog-heading"><div><p class="eyebrow" id="info-eyebrow">LEARN MORE</p><h2 id="info-title">Why this matters</h2></div><button class="icon-button" type="button" data-close="info-dialog" aria-label="Close dialog">×</button></div>
       <div id="info-content" class="info-content"></div>
       <div class="source-list" id="info-sources"></div>
