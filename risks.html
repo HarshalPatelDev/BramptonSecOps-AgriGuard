@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>Risk plan | AgriGuard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="AgriGuard home"><span class="brand-mark" aria-hidden="true">A</span><span>AgriGuard<span class="brand-sub">SECURITY PLANNER</span></span></a>
+      <nav class="primary-nav" aria-label="Main navigation"><a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="inventory.html">Inventory</a><a class="nav-link active" href="risks.html" aria-current="page">Risk plan</a><a class="nav-link" href="connections.html">Connections</a><a class="nav-link" href="operations.html">Operations</a></nav>
+      <div class="topbar-right"><span class="local-badge"><span></span> Saved on this device</span><a class="button button-quiet" href="login.html">Sign in</a><button class="button button-quiet" id="reset-demo" type="button">Reset demo</button></div>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <div class="page-view" id="page-risks" aria-labelledby="risks-title">
+      <section class="section-block risk-section" id="priorities">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 / PRIORITIZE CYBERSECURITY GAPS</p>
+            <h1 class="page-title" id="risks-title">Risk assessment and remediation</h1>
+            <p class="section-description">Prioritize business impact across confidentiality, integrity, and availability. Review the scenario, then follow practical IT/OT safeguards.</p>
+          </div>
+          <span class="live-label"><span></span> Updates as you edit</span>
+        </div>
+        <div class="risk-toolbar">
+          <div class="filter-tabs" role="group" aria-label="Filter findings by severity">
+            <button class="filter-tab active" data-filter="all" aria-pressed="true" type="button">All <span id="count-all">0</span></button>
+            <button class="filter-tab" data-filter="critical" aria-pressed="false" type="button">Critical <span id="count-critical">0</span></button>
+            <button class="filter-tab" data-filter="high" aria-pressed="false" type="button">High <span id="count-high">0</span></button>
+            <button class="filter-tab" data-filter="medium" aria-pressed="false" type="button">Moderate <span id="count-medium">0</span></button>
+            <button class="filter-tab" data-filter="low" aria-pressed="false" type="button">Low <span id="count-low">0</span></button>
+            <button class="filter-tab" data-filter="informational" aria-pressed="false" type="button">Informational <span id="count-informational">0</span></button>
+            <button class="filter-tab" data-filter="na" aria-pressed="false" type="button">N/A <span id="count-na">0</span></button>
+          </div>
+          <span class="sort-caption">Critical 90+ · High 75–89 · Moderate 52–74 · Low 35–51 · Informational below 35</span>
+        </div>
+        <p class="risk-method-note">Scores combine the control gap, business criticality, internet exposure, and recorded CIA impact. N/A is reserved for controls an owner has reviewed and marked not applicable; the prototype does not infer N/A.</p>
+        <div class="finding-list" id="finding-list" aria-live="polite"></div>
+      </section>
+      </div>
+    </main>
+    <footer class="footer"><span>AgriGuard Risk Planner <span class="footer-dot">?</span> Cyber resilience for food supply chains</span><a href="README.md">How this MVP works</a></footer>
+
+    <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title" aria-describedby="info-content">
+      <div class="dialog-heading"><div><p class="eyebrow" id="info-eyebrow">LEARN MORE</p><h2 id="info-title">Why this matters</h2></div><button class="icon-button" type="button" data-close="info-dialog" aria-label="Close dialog">×</button></div>
+      <div id="info-content" class="info-content"></div>
+      <div class="source-list" id="info-sources"></div>
+      <div class="dialog-actions"><button class="button button-dark" type="button" data-close="info-dialog">Got it</button></div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

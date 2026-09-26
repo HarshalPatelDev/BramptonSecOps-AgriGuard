@@ -304,9 +304,13 @@ let vendors = readCollection(VENDOR_STORAGE_KEY, demoVendors, item => typeof ite
 let activeFilter = 'all';
 let activeMap = 'topology';
 let activeDomain = 'all';
-let activePage = 'home';
 let toastTimer;
 let activeDialogTrigger = null;
+
+function bind(selector, eventName, handler) {
+  const element = document.querySelector(selector);
+  if (element) element.addEventListener(eventName, handler);
+}
 
 function showAccessibleDialog(dialog, initialFocus) {
   activeDialogTrigger = document.activeElement;
@@ -478,12 +482,14 @@ function render() {
 }
 
 function renderSummary(findings) {
+  const summary = document.querySelector('#summary');
+  if (!summary) return;
   const high = findings.filter(item => item.priority === 'high').length;
   const critical = findings.filter(item => item.priority === 'critical').length;
   const medium = findings.filter(item => item.priority === 'medium').length;
   const topScore = findings.length ? findings[0].score : 0;
   const average = findings.length ? Math.round(findings.reduce((sum, item) => sum + item.score, 0) / findings.length) : 0;
-  document.querySelector('#summary').innerHTML = `
+  summary.innerHTML = `
     <article class="summary-card"><div class="summary-label">Systems inventoried</div><div class="summary-value">${assets.length}</div><div class="summary-hint">Across your business</div></article>
     <article class="summary-card"><div class="summary-label">Critical / high risks</div><div class="summary-value ${critical || high ? 'priority-high' : ''}">${critical + high}</div><div class="summary-hint">${critical} critical · ${high} high</div></article>
     <article class="summary-card"><div class="summary-label">Other gaps to review</div><div class="summary-value ${medium ? 'priority-med' : ''}">${medium + findings.filter(item => item.priority === 'low').length}</div><div class="summary-hint">${medium} medium · ${findings.filter(item => item.priority === 'low').length} lower priority</div></article>
@@ -492,6 +498,7 @@ function renderSummary(findings) {
 
 function renderAssets() {
   const list = document.querySelector('#asset-list');
+  if (!list) return;
   if (!assets.length) {
     list.innerHTML = `<div class="empty-state"><h3>Your inventory is ready to grow</h3><p>Add the systems your business relies on to get a tailored set of risk priorities.</p><button class="button button-dark" type="button" data-action="add">Add your first technology</button></div>`;
     return;
@@ -540,6 +547,7 @@ function attachLogoFallbacks(container) {
 
 function renderVendors() {
   const list = document.querySelector('#vendor-list');
+  if (!list) return;
   if (!vendors.length) {
     list.innerHTML = '<div class="empty-state"><h3>No third parties recorded</h3><p>Add service providers, carriers, technology partners, or other suppliers to connect them to your systems and network zones.</p></div>';
     return;
@@ -562,6 +570,7 @@ function renderVendors() {
 
 function renderNodes() {
   const list = document.querySelector('#node-list');
+  if (!list) return;
   if (!networkNodes.length) {
     list.innerHTML = '<p class="small-muted">No network nodes yet. Use Add node to describe an endpoint, server, gateway, or infrastructure component.</p>';
     return;
@@ -574,6 +583,8 @@ function renderNodes() {
 }
 
 function renderFindings(findings) {
+  const container = document.querySelector('#finding-list');
+  if (!container) return;
   const counts = {
     all: findings.length,
     critical: findings.filter(item => item.priority === 'critical').length,
@@ -591,7 +602,6 @@ function renderFindings(findings) {
   document.querySelector('#count-informational').textContent = counts.informational;
   document.querySelector('#count-na').textContent = counts.na;
   const visible = findings.filter(item => activeFilter === 'all' || item.priority === activeFilter);
-  const container = document.querySelector('#finding-list');
   if (!visible.length) {
     const emptyMessage = activeFilter === 'na'
       ? 'Not applicable findings are not scored by this prototype. Marking a control N/A requires an owner-reviewed applicability decision.'
@@ -646,12 +656,14 @@ function humanStatus(status) {
 }
 
 function renderOperations() {
+  const metrics = document.querySelector('#operations-metrics');
+  if (!metrics) return;
   const active = dispatches.filter(task => !['delivered', 'canceled'].includes(task.status));
   const disruptions = dispatches.filter(task => ['delayed', 'canceled'].includes(task.status));
   const totalDelay = dispatches.reduce((sum, task) => sum + taskDelayMinutes(task), 0);
   const openIssues = incidents.filter(issue => issue.status !== 'resolved').length;
   const estimatedCost = incidents.reduce((sum, issue) => sum + incidentOtherCosts(issue), 0);
-  document.querySelector('#operations-metrics').innerHTML = `
+  metrics.innerHTML = `
     <article class="summary-card"><div class="summary-label">Active dispatches</div><div class="summary-value">${active.length}</div><div class="summary-hint">Scheduled, in transit, or awaiting update</div></article>
     <article class="summary-card"><div class="summary-label">Delayed / canceled</div><div class="summary-value ${disruptions.length ? 'priority-med' : ''}">${disruptions.length}</div><div class="summary-hint">Reported dispatch tasks</div></article>
     <article class="summary-card"><div class="summary-label">Recorded delay</div><div class="summary-value">${(totalDelay / 60).toFixed(1)}<span style="font-size:12px;color:#98a49d;font-weight:600"> hrs</span></div><div class="summary-hint">Sum of known task delays; user-entered</div></article>
@@ -697,6 +709,8 @@ function incidentOtherDirectCost(issue) {
 }
 
 function renderFinance() {
+  const metricsElement = document.querySelector('#finance-metrics');
+  if (!metricsElement) return;
   const trackedValue = dispatches.reduce((sum, task) => sum + Math.max(0, Number(task.productValue) || 0), 0);
   const openValue = dispatches
     .filter(task => !['delivered', 'canceled'].includes(task.status))
@@ -714,7 +728,7 @@ function renderFinance() {
     ['Net product loss', money(netLoss), 'Gross loss less salvage'],
     ['Total estimated disruption impact', money(totalImpact), 'Net product loss + additional direct costs']
   ];
-  document.querySelector('#finance-metrics').innerHTML = metrics.map(([label, value, hint], index) =>
+  metricsElement.innerHTML = metrics.map(([label, value, hint], index) =>
     `<article class="finance-metric ${index === 5 ? 'finance-total' : ''}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(hint)}</small></article>`
   ).join('');
 
@@ -749,6 +763,7 @@ function mapsDirectionsUrl(task) {
 
 function renderDispatches() {
   const list = document.querySelector('#dispatch-list');
+  if (!list) return;
   if (!dispatches.length) {
     list.innerHTML = '<div class="no-findings">No dispatch tasks recorded yet. Add a load to see its planned ETA, route link, and fallback plan.</div>';
     return;
@@ -773,6 +788,7 @@ function renderDispatches() {
 
 function renderIncidents() {
   const list = document.querySelector('#incident-list');
+  if (!list) return;
   if (!incidents.length) {
     list.innerHTML = '<div class="no-findings">No physical issues logged. Record equipment, road, cargo, facility, or safety disruptions and track their remediation.</div>';
     return;
@@ -795,6 +811,7 @@ function renderIncidents() {
 function renderDiagram() {
   const host = document.querySelector('#diagram');
   const footnote = document.querySelector('#map-footnote');
+  if (!host || !footnote) return;
   const allItems = activeMap === 'assets' ? topologyItems().filter(item => item.kind === 'asset') : topologyItems();
   const items = allItems.filter(item => {
     const domain = businessDomain(item);
@@ -919,6 +936,7 @@ function capitalize(value) {
 
 function showToast(message) {
   const toast = document.querySelector('#toast');
+  if (!toast) return;
   toast.textContent = message;
   toast.classList.add('visible');
   clearTimeout(toastTimer);
@@ -1138,8 +1156,8 @@ function openInfoDialog(kind, ruleKey, assetId) {
   showAccessibleDialog(document.querySelector('#info-dialog'), document.querySelector('#info-dialog .icon-button'));
 }
 
-document.querySelector('#add-asset-top').addEventListener('click', openDialog);
-document.querySelector('#asset-list').addEventListener('click', event => {
+bind('#add-asset-top', 'click', openDialog);
+bind('#asset-list', 'click', event => {
   const button = event.target.closest('button[data-action]');
   if (!button) return;
   if (button.dataset.action === 'add') openDialog();
@@ -1158,9 +1176,9 @@ document.querySelector('#asset-list').addEventListener('click', event => {
     showToast(`${asset.name} removed from inventory.`);
   }
 });
-document.querySelector('#close-dialog').addEventListener('click', () => document.querySelector('#asset-dialog').close());
-document.querySelector('#cancel-dialog').addEventListener('click', () => document.querySelector('#asset-dialog').close());
-document.querySelector('#asset-form').addEventListener('submit', event => {
+bind('#close-dialog', 'click', () => document.querySelector('#asset-dialog').close());
+bind('#cancel-dialog', 'click', () => document.querySelector('#asset-dialog').close());
+bind('#asset-form', 'submit', event => {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
@@ -1202,9 +1220,9 @@ document.querySelector('#asset-form').addEventListener('submit', event => {
   render();
   document.querySelector('#asset-dialog').close();
   showToast(`${asset.name} ${editingId ? 'updated' : 'added'}. Risk priorities updated.`);
-  document.querySelector('#inventory').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelector('#inventory')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
-document.querySelector('#reset-demo').addEventListener('click', () => {
+bind('#reset-demo', 'click', () => {
   assets = structuredClone(demoAssets);
   networkNodes = structuredClone(demoNodes);
   vendors = structuredClone(demoVendors);
@@ -1219,9 +1237,9 @@ document.querySelector('#reset-demo').addEventListener('click', () => {
   showToast('Demo inventory and transport records restored.');
 });
 
-document.querySelector('#add-node').addEventListener('click', () => openNodeDialog());
-document.querySelector('#add-vendor').addEventListener('click', () => openVendorDialog());
-document.querySelector('#node-list').addEventListener('click', event => {
+bind('#add-node', 'click', () => openNodeDialog());
+bind('#add-vendor', 'click', () => openVendorDialog());
+bind('#node-list', 'click', event => {
   const editButton = event.target.closest('[data-edit-node]');
   if (editButton) openNodeDialog(editButton.dataset.editNode);
   const removeButton = event.target.closest('[data-remove-node]');
@@ -1239,7 +1257,7 @@ document.querySelector('#node-list').addEventListener('click', event => {
     if (removed) showToast(`${removed.name} removed; its declared links were cleared.`);
   }
 });
-document.querySelector('#vendor-list').addEventListener('click', event => {
+bind('#vendor-list', 'click', event => {
   const editButton = event.target.closest('[data-edit-vendor]');
   if (editButton) openVendorDialog(editButton.dataset.editVendor);
   const removeButton = event.target.closest('[data-remove-vendor]');
@@ -1257,14 +1275,14 @@ document.querySelector('#vendor-list').addEventListener('click', event => {
     if (removed) showToast(`${removed.name} removed; its declared links were cleared.`);
   }
 });
-document.querySelector('#diagram').addEventListener('click', event => {
+bind('#diagram', 'click', event => {
   const item = event.target.closest('[data-map-kind]');
   if (!item) return;
   if (item.dataset.mapKind === 'node') openNodeDialog(item.dataset.mapId);
   if (item.dataset.mapKind === 'vendor') openVendorDialog(item.dataset.mapId);
   if (item.dataset.mapKind === 'asset') openDialog(item.dataset.mapId);
 });
-document.querySelector('#diagram').addEventListener('keydown', event => {
+bind('#diagram', 'keydown', event => {
   if (event.key !== 'Enter' && event.key !== ' ') return;
   const item = event.target.closest('[data-map-kind]');
   if (!item) return;
@@ -1272,7 +1290,7 @@ document.querySelector('#diagram').addEventListener('keydown', event => {
   item.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 });
 
-document.querySelector('#node-form').addEventListener('submit', event => {
+bind('#node-form', 'submit', event => {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
@@ -1295,7 +1313,7 @@ document.querySelector('#node-form').addEventListener('submit', event => {
   showToast(`Node "${node.name}" saved to ${node.zone}.`);
 });
 
-document.querySelector('#vendor-form').addEventListener('submit', event => {
+bind('#vendor-form', 'submit', event => {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
@@ -1329,15 +1347,15 @@ document.querySelector('#vendor-form').addEventListener('submit', event => {
   showToast(`Vendor "${vendor.name}" saved and linked to the topology.`);
 });
 
-document.querySelector('#add-dispatch').addEventListener('click', () => openDispatchDialog());
-document.querySelector('#dispatch-list').addEventListener('click', event => {
+bind('#add-dispatch', 'click', () => openDispatchDialog());
+bind('#dispatch-list', 'click', event => {
   const button = event.target.closest('[data-edit-dispatch]');
   if (button) openDispatchDialog(button.dataset.editDispatch);
   const infoButton = event.target.closest('[data-info="dispatch"]');
   if (infoButton) openInfoDialog('dispatch');
 });
-document.querySelector('#add-incident').addEventListener('click', () => openIncidentDialog());
-document.querySelector('#incident-list').addEventListener('click', event => {
+bind('#add-incident', 'click', () => openIncidentDialog());
+bind('#incident-list', 'click', event => {
   const button = event.target.closest('[data-edit-incident]');
   if (button) openIncidentDialog(button.dataset.editIncident);
 });
@@ -1370,11 +1388,11 @@ document.querySelectorAll('dialog').forEach(dialog => {
 document.querySelectorAll('[data-info]').forEach(button => button.addEventListener('click', () => {
   openInfoDialog(button.dataset.info, button.dataset.rule);
 }));
-document.querySelector('#finding-list').addEventListener('click', event => {
+bind('#finding-list', 'click', event => {
   const button = event.target.closest('[data-info="finding"]');
   if (button) openInfoDialog('finding', button.dataset.rule, button.dataset.assetId);
 });
-document.querySelector('#dispatch-form').addEventListener('submit', event => {
+bind('#dispatch-form', 'submit', event => {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
@@ -1423,7 +1441,7 @@ document.querySelector('#dispatch-form').addEventListener('submit', event => {
   form.closest('dialog').close();
   showToast(`Dispatch ${task.status === 'canceled' ? 'cancellation' : 'task'} saved.`);
 });
-document.querySelector('#incident-form').addEventListener('submit', event => {
+bind('#incident-form', 'submit', event => {
   event.preventDefault();
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
@@ -1459,15 +1477,15 @@ document.querySelectorAll('.filter-tab').forEach(button => button.addEventListen
   renderFindings(assess());
   showToast(`${button.textContent.trim()} findings selected.`);
 }));
-document.querySelector('#asset-map-tab').addEventListener('click', () => {
+bind('#asset-map-tab', 'click', () => {
   activeMap = 'assets';
   updateMapTabs();
 });
-document.querySelector('#network-map-tab').addEventListener('click', () => {
+bind('#network-map-tab', 'click', () => {
   activeMap = 'network';
   updateMapTabs();
 });
-document.querySelector('#topology-map-tab').addEventListener('click', () => {
+bind('#topology-map-tab', 'click', () => {
   activeMap = 'topology';
   updateMapTabs();
 });
@@ -1476,6 +1494,7 @@ function updateMapTabs() {
   const assetTab = document.querySelector('#asset-map-tab');
   const networkTab = document.querySelector('#network-map-tab');
   const topologyTab = document.querySelector('#topology-map-tab');
+  if (!assetTab || !networkTab || !topologyTab) return;
   assetTab.classList.toggle('active', activeMap === 'assets');
   networkTab.classList.toggle('active', activeMap === 'network');
   topologyTab.classList.toggle('active', activeMap === 'topology');
@@ -1487,38 +1506,6 @@ function updateMapTabs() {
   topologyTab.tabIndex = activeMap === 'topology' ? 0 : -1;
   document.querySelector('#diagram').setAttribute('aria-label', activeMap === 'assets' ? 'Asset relationship diagram' : activeMap === 'network' ? 'Network zone diagram' : 'Full network topology diagram');
   renderDiagram();
-}
-
-function navigateToPage(page, updateHistory = true) {
-  const pageNames = ['home', 'inventory', 'risks', 'connections', 'operations'];
-  if (!pageNames.includes(page)) return;
-  const pageChanged = page !== activePage;
-  activePage = page;
-  document.querySelectorAll('[data-page-view]').forEach(view => {
-    view.hidden = view.dataset.pageView !== page;
-  });
-  document.querySelectorAll('.nav-link').forEach(button => {
-    const selected = button.dataset.page === page;
-    button.classList.toggle('active', selected);
-    if (selected) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
-  document.title = `${page === 'home' ? 'Overview' : capitalize(page)} | AgriGuard Risk Planner`;
-  if (updateHistory && pageChanged) history.pushState(null, '', `#${page}`);
-  document.querySelector('#main-content').focus({ preventScroll: true });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-document.querySelectorAll('[data-page]').forEach(button => {
-  button.addEventListener('click', () => navigateToPage(button.dataset.page));
-});
-window.addEventListener('hashchange', () => navigateToPage(location.hash.slice(1), false));
-window.addEventListener('popstate', () => navigateToPage(location.hash.slice(1) || 'home', false));
-const initialPage = location.hash.slice(1);
-if (initialPage && document.querySelector(`[data-page-view="${initialPage}"]`)) {
-  navigateToPage(initialPage, false);
-} else {
-  navigateToPage('home', false);
 }
 
 document.querySelectorAll('.domain-tab').forEach(button => {

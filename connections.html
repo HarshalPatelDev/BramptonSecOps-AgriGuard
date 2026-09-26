@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>Connections | AgriGuard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="AgriGuard home"><span class="brand-mark" aria-hidden="true">A</span><span>AgriGuard<span class="brand-sub">SECURITY PLANNER</span></span></a>
+      <nav class="primary-nav" aria-label="Main navigation"><a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="inventory.html">Inventory</a><a class="nav-link" href="risks.html">Risk plan</a><a class="nav-link active" href="connections.html" aria-current="page">Connections</a><a class="nav-link" href="operations.html">Operations</a></nav>
+      <div class="topbar-right"><span class="local-badge"><span></span> Saved on this device</span><a class="button button-quiet" href="login.html">Sign in</a><button class="button button-quiet" id="reset-demo" type="button">Reset demo</button></div>
+    </header>
+    <main id="main-content" tabindex="-1">
+      <div class="page-view" id="page-connections" aria-labelledby="connections-title">
+      <section class="section-block map-section" id="maps">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">05 / SUPPLY CHAIN &amp; NETWORK TOPOLOGY</p>
+            <h1 class="page-title" id="connections-title">Business connections</h1>
+            <p class="section-description">Separate IT from operational technology, then view the vendor and network dependencies that connect them. OT includes systems with direct effects on products, equipment, facilities, and people.</p>
+          </div>
+        </div>
+        <div class="node-directory">
+          <div class="node-directory-heading"><div><h3>Network node inventory</h3><p>Click a node on the map or edit it here to update its zone, purpose, and dependencies.</p></div><button class="button button-dark" id="add-node" type="button">＋ Add node</button></div>
+          <div class="node-list" id="node-list" aria-live="polite"></div>
+        </div>
+        <div class="domain-switch" role="group" aria-label="Filter connection map by business domain">
+          <button class="domain-tab active" data-domain="all" aria-pressed="true" type="button">Combined</button>
+          <button class="domain-tab" data-domain="it" aria-pressed="false" type="button">IT</button>
+          <button class="domain-tab" data-domain="ot" aria-pressed="false" type="button">Operational technology</button>
+          <button class="domain-tab" data-domain="shared" aria-pressed="false" type="button">Shared / vendors</button>
+        </div>
+        <div class="map-heading-tools">
+          <div class="map-switch" role="tablist" aria-label="Diagram view">
+            <button class="map-tab" id="asset-map-tab" role="tab" aria-selected="false" aria-controls="diagram" tabindex="-1" type="button">Asset graph</button>
+            <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" aria-controls="diagram" tabindex="-1" type="button">Network zones</button>
+            <button class="map-tab active" id="topology-map-tab" role="tab" aria-selected="true" aria-controls="diagram" tabindex="0" type="button">Full topology</button>
+          </div>
+        </div>
+        <div class="panel map-panel">
+          <div class="map-legend"><span><i class="legend-dot dot-app"></i> Application / asset</span><span><i class="legend-dot dot-infra"></i> Node / infrastructure</span><span><i class="legend-dot dot-vendor"></i> Vendor / third party</span><span><i class="legend-line"></i> Declared dependency</span></div>
+          <div class="diagram-wrap" id="diagram" role="tabpanel" aria-label="Full network topology diagram"></div>
+          <p class="map-footnote" id="map-footnote" role="status" aria-live="polite">Arrows indicate declared dependencies, not verified network traffic.</p>
+        </div>
+      </section>
+
+      </div>
+    </main>
+    <footer class="footer"><span>AgriGuard Risk Planner <span class="footer-dot">?</span> Cyber resilience for food supply chains</span><a href="README.md">How this MVP works</a></footer>
+    <dialog id="asset-dialog" class="asset-dialog" aria-labelledby="asset-dialog-title" aria-describedby="asset-dialog-description">
+      <form id="asset-form" method="dialog">
+        <div class="dialog-heading">
+          <div><p class="eyebrow">TECHNOLOGY INVENTORY</p><h2 id="asset-dialog-title">Add a technology</h2></div>
+          <button class="icon-button" id="close-dialog" type="button" aria-label="Close dialog">×</button>
+        </div>
+        <p class="dialog-intro" id="asset-dialog-description">Describe what this system does and the safeguards you have in place. Choose “Not sure” if you need to check.</p>
+        <div class="form-grid">
+          <label class="field field-full">Technology or service name <span class="required">*</span>
+            <input name="name" required maxlength="70" placeholder="e.g. Microsoft 365, AWS, payroll system">
+          </label>
+          <label class="field field-full">Technology logo URL (optional; HTTPS only)
+            <input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg">
+            <span class="field-hint">Recognized brands use their logo automatically; your HTTPS URL overrides it. Logo images load from an external host. Unknown brands use initials.</span>
+          </label>
+          <label class="field">Type
+            <select name="type"><option>Identity &amp; access</option><option>Cloud platform</option><option>Business application</option><option>Device / endpoint</option><option>Network / infrastructure</option><option>Data storage</option><option>Backup &amp; recovery</option><option>Other</option></select>
+          </label>
+          <label class="field">Business criticality
+            <select name="criticality"><option value="high">High — outage would stop key work</option><option value="medium" selected>Medium — important, workaround exists</option><option value="low">Low — limited business impact</option></select>
+          </label>
+          <label class="field">Business domain
+            <select name="domain"><option value="it">Information technology (IT)</option><option value="ot">Operational technology (OT)</option><option value="shared">Shared IT/OT</option></select>
+          </label>
+          <label class="field field-full">What do you use it for, and why?
+            <textarea name="purpose" required maxlength="240" rows="2" placeholder="e.g. Stores customer orders and supports online sales"></textarea>
+          </label>
+          <label class="field field-full">Business impact if unavailable or changed incorrectly <span class="required">*</span>
+            <textarea name="businessImpact" required maxlength="240" rows="2" placeholder="e.g. A false inventory count can delay a production batch or grocery delivery"></textarea>
+          </label>
+          <label class="field">Business owner or team
+            <input name="owner" maxlength="60" placeholder="e.g. Operations">
+          </label>
+          <label class="field">Internet exposure
+            <select name="exposure"><option value="no">Not directly internet-facing</option><option value="yes">Accessible from the internet</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Default admin credentials
+            <select name="admin"><option value="changed">Changed; unique credentials are used</option><option value="shared">Shared/default credentials may be in use</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Multi-factor authentication (MFA)
+            <select name="mfa"><option value="yes">Enabled for users and administrators</option><option value="partial">Enabled for some accounts</option><option value="no">Not enabled</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Named roles / groups and least privilege
+            <select name="access"><option value="yes">Defined roles or groups; access is limited</option><option value="no">Permissions are broad or not grouped</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Backups and recovery
+            <select name="backups"><option value="yes">Backups are configured and restore-tested</option><option value="partial">Backups exist; restore not recently tested</option><option value="no">No known backup / recovery plan</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Security logs and review
+            <select name="logging"><option value="yes">Security logs are enabled and reviewed</option><option value="partial">Some logs exist; review is irregular</option><option value="no">No known logging or review</option><option value="unknown" selected>Not sure</option></select>
+          </label>
+          <label class="field">Where is it hosted?
+            <select name="zone"><option value="Cloud / SaaS">Cloud / SaaS</option><option value="Internal network">Internal network</option><option value="Restricted data zone">Restricted data zone</option><option value="Perimeter / DMZ">Perimeter / DMZ</option><option value="Remote / user devices">Remote / user devices</option><option value="Not sure">Not sure</option></select>
+          </label>
+          <fieldset class="field field-full cia-fieldset"><legend>Business impact if this system is compromised or unavailable</legend><span class="field-hint">Rate confidentiality, integrity, and availability from the business perspective.</span>
+            <div class="cia-inputs">
+              <label class="field">Confidentiality<select name="confidentiality"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high">High</option></select></label>
+              <label class="field">Integrity<select name="integrity"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
+              <label class="field">Availability<select name="availability"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
+            </div>
+          </fieldset>
+          <label class="field field-full">Depends on other inventoried systems
+            <select name="dependencies" id="dependencies" multiple size="3" aria-describedby="dependency-hint"></select>
+            <span class="field-hint" id="dependency-hint">Use Ctrl (Windows) or Command (Mac) to select more than one. For example, an app may depend on your identity provider.</span>
+          </label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" id="cancel-dialog" type="button">Cancel</button><button class="button button-dark" type="submit">Add to inventory</button></div>
+      </form>
+    </dialog><dialog id="node-dialog" class="asset-dialog" aria-labelledby="node-dialog-title" aria-describedby="node-dialog-description">
+      <form id="node-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">NETWORK TOPOLOGY</p><h2 id="node-dialog-title">Add network node</h2></div><button class="icon-button" type="button" data-close="node-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro" id="node-dialog-description">Add a device, service, or infrastructure point. Choose its zone and link the systems or third parties it depends on.</p>
+        <div class="form-grid">
+          <label class="field">Node name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Dispatch server, gateway, Wi-Fi access point"></label>
+          <label class="field">Network zone<select name="zone"></select></label>
+          <label class="field">Business domain<select name="domain"><option value="it">Information technology (IT)</option><option value="ot">Operational technology (OT)</option><option value="shared">Shared IT/OT</option></select></label>
+          <label class="field field-full">What is this node used for? <span class="required">*</span><textarea name="purpose" required maxlength="220" rows="2" placeholder="What business or network function does it provide?"></textarea></label>
+          <label class="field field-full">Operational or physical consequence if unavailable or incorrect <span class="required">*</span><textarea name="businessImpact" required maxlength="240" rows="2" placeholder="e.g. A missed temperature alert could delay action on a perishable load"></textarea></label>
+          <label class="field field-full">Connects to / depends on
+            <select name="dependencies" multiple size="5"></select>
+            <span class="field-hint">Select systems or vendors. Connections are declared dependencies, not automatically detected traffic.</span>
+          </label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="node-dialog">Cancel</button><button class="button button-dark" type="submit">Save node</button></div>
+      </form>
+    </dialog><dialog id="vendor-dialog" class="asset-dialog" aria-labelledby="vendor-dialog-title" aria-describedby="vendor-dialog-description">
+      <form id="vendor-form" method="dialog">
+        <div class="dialog-heading"><div><p class="eyebrow">SUPPLY-CHAIN PARTNER</p><h2 id="vendor-dialog-title">Add third-party vendor</h2></div><button class="icon-button" type="button" data-close="vendor-dialog" aria-label="Close dialog">×</button></div>
+        <p class="dialog-intro" id="vendor-dialog-description">Record the service, connection boundary, information/access shared, and which internal systems rely on this provider.</p>
+        <div class="form-grid">
+          <label class="field">Vendor / partner name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Carrier, managed IT, warehouse provider"></label>
+          <label class="field">Connection / hosting zone<select name="zone"></select></label>
+          <label class="field">Business domain<select name="domain"><option value="shared">Shared / crosses IT and OT</option><option value="it">Primarily IT</option><option value="ot">Primarily operational (OT)</option></select></label>
+          <label class="field field-full">Service provided <span class="required">*</span><input name="service" required maxlength="140" placeholder="What business capability or resource do they provide?"></label>
+          <label class="field field-full">Business consequence if this provider is unavailable <span class="required">*</span><textarea name="businessImpact" required maxlength="240" rows="2" placeholder="e.g. Without backup reefer capacity, a pickup may miss the cold-room receiving window"></textarea></label>
+          <label class="field field-full">Vendor logo URL (optional; HTTPS only)<input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg"><span class="field-hint">Recognized company names use their logo automatically; this HTTPS URL overrides it. Logo images load from an external host. Unknown names use initials.</span></label>
+          <label class="field field-full">What access do they have?<textarea name="access" maxlength="220" rows="2" placeholder="Remote support, portal account, API connection, physical facility access..."></textarea></label>
+          <label class="field field-full">What data or resources are shared?<textarea name="data" maxlength="220" rows="2" placeholder="Shipment details, customer information, system configuration, vehicles..."></textarea></label>
+          <label class="field">Business criticality<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>
+          <label class="field">Internal relationship owner<input name="contact" maxlength="70" placeholder="e.g. Fleet manager / operations lead"></label>
+          <label class="field field-full">Connected systems or nodes
+            <select name="dependencies" multiple size="5"></select>
+            <span class="field-hint">Choose the internal assets/nodes that use this vendor or service.</span>
+          </label>
+        </div>
+        <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="vendor-dialog">Cancel</button><button class="button button-dark" type="submit">Save vendor</button></div>
+      </form>
+    </dialog>
+    <dialog id="info-dialog" class="info-dialog" aria-labelledby="info-title" aria-describedby="info-content">
+      <div class="dialog-heading"><div><p class="eyebrow" id="info-eyebrow">LEARN MORE</p><h2 id="info-title">Why this matters</h2></div><button class="icon-button" type="button" data-close="info-dialog" aria-label="Close dialog">×</button></div>
+      <div id="info-content" class="info-content"></div>
+      <div class="source-list" id="info-sources"></div>
+      <div class="dialog-actions"><button class="button button-dark" type="button" data-close="info-dialog">Got it</button></div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

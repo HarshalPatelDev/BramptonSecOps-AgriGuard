@@ -4,7 +4,7 @@ A food supply-chain security and operational resilience MVP. It follows perishab
 
 ## Run it
 
-Open `index.html` in a modern browser. There is no build step, backend, real account, or external dependency. The **Sign in** link opens `login.html`, which contains sign-in and signup UI only; it does not authenticate users or save form data. Do not enter real passwords. Inventory, dispatches, and physical issues are stored in the planner browser's local storage and are not sent to a server. Use **Reset demo** to restore sample records.
+Run a local static web server from the repository directory (for example, `python -m http.server 8000`) and open `http://localhost:8000`. There is no build step or package dependency. The app is split across `index.html` (overview), `inventory.html`, `risks.html`, `connections.html`, and `operations.html`; `app.js` and `styles.css` provide the shared behavior and design. Serve all pages from the same origin so browser-local data is shared consistently between them. The **Sign in** link opens `login.html`, which contains sign-in and signup UI only; it does not authenticate users or save form data. Do not enter real passwords. Inventory, dispatches, and physical issues are stored in the browser's local storage and are not sent to a server. Use **Reset demo** to restore sample records.
 
 ## Accessibility
 
@@ -12,7 +12,7 @@ The prototype is designed toward Ontario AODA requirements by following WCAG 2.0
 
 ## App workflow
 
-The interface is split into Overview, Inventory, Risk plan, Connections, and Operations pages instead of one long dashboard.
+The interface uses separate Overview, Inventory, Risk plan, Connections, and Operations HTML pages with standard links, rather than hiding all page content in one document.
 
 1. **Identify resources:** inventory business technologies, equipment, OT devices, suppliers, and vendors. Record purpose, owner, business domain, operational/business consequence, dependencies, and CIA impact. Recognized brands (including Microsoft 365, Google Workspace, AWS, Cisco, SAP, Oracle, and common logistics providers) display logos automatically in inventory cards and the combined topology map using Simple Icons. A user-provided HTTPS logo URL overrides automatic recognition; unrecognized brands show generated initials. These images load from the Simple Icons CDN or the user-provided host, so the browser makes an external request.
 2. **Prioritize risk:** deterministic rules assess known control gaps, business criticality, exposure, and stated confidentiality, integrity, and availability impact. Findings are ranked Critical, High, Moderate, Low, or Informational. N/A is not automatically inferred or scored; it is shown as an empty filter until an owner-reviewed applicability workflow exists.

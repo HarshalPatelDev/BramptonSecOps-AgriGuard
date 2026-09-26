@@ -393,3 +393,103 @@ h2 { margin: 0 0 7px; font-size: 25px; letter-spacing: -.9px; line-height: 1.25;
   .finance-metrics { grid-template-columns: 1fr 1fr; }
   .cia-inputs { grid-template-columns: 1fr; }
 }
+
+/* A quieter, product-focused interface with clear hierarchy and open space. */
+:root {
+  --ink: #202923;
+  --muted: #5f6b63;
+  --green: #176c4c;
+  --green-dark: #124d38;
+  --mint: #eef5f0;
+  --line: #e8ece8;
+  --canvas: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+body { color: var(--ink); background: #fff; }
+.topbar { min-height: 68px; padding-right: max(calc((100vw - 1160px) / 2), 4vw); padding-left: max(calc((100vw - 1160px) / 2), 4vw); border-bottom-color: #ecefec; }
+.brand { gap: 9px; font-family: inherit; font-size: 17px; letter-spacing: -.35px; }
+.brand-mark { width: 31px; height: 31px; border-radius: 6px; background: #173f31; font-family: inherit; }
+.primary-nav { gap: 2px; }
+.nav-link { position: relative; padding: 10px 11px; border-radius: 4px; color: #46534b; font-size: 13px; font-weight: 550; text-decoration: none; }
+.nav-link:hover { color: #173f31; background: #f6f8f6; }
+.nav-link.active { color: #173f31; background: transparent; }
+.nav-link.active::after { position: absolute; right: 11px; bottom: 2px; left: 11px; height: 2px; background: #176c4c; content: ""; }
+.topbar-right { gap: 12px; }
+.local-badge { font-size: 11px; }
+.button { min-height: 38px; border-radius: 5px; font-size: 13px; transition: background .15s, border-color .15s; }
+.button:hover { transform: none; }
+.button-dark { background: #176c4c; }
+.button-dark:hover { background: #124d38; }
+.button-quiet { color: #29382f; border-color: #dfe5df; }
+main { width: min(1160px, 100% - 64px); margin: 0 auto; padding: 0 0 72px; }
+.page-view { max-width: none; margin: 0 auto 42px; }
+.page-view > .section-block:first-child { padding-top: 48px; }
+.hero { max-width: none; min-height: 0; padding: 76px 0 52px; border: 0; border-radius: 0; background: #fff; }
+.hero-copy { max-width: 720px; }
+.hero .eyebrow { color: #176c4c; }
+.hero h1 { max-width: 680px; color: #202923; font-size: clamp(38px, 5.1vw, 58px); font-weight: 650; line-height: 1.06; letter-spacing: -2.4px; }
+.hero h1 span { color: #176c4c; }
+.hero-description { max-width: 590px; margin: 20px 0 25px; color: #5b665f; font-size: 17px; line-height: 1.65; }
+.notice { max-width: none; margin: 0 0 32px; padding: 15px 17px; border: 0; border-radius: 4px; background: #f6f8f6; }
+.notice p { color: #4b5750; font-size: 13px; }
+.summary-grid { max-width: none; margin: 0 auto 45px; gap: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.summary-card { min-height: 105px; padding: 20px 17px; border: 0; border-right: 1px solid var(--line); border-radius: 0; }
+.summary-card:last-child { border-right: 0; }
+.summary-label, .summary-hint { color: #5f6b63; font-size: 11px; }
+.summary-value { color: #202923; font-family: inherit; font-size: 27px; font-weight: 650; }
+.home-workflow { padding: 28px 0 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff; }
+.workflow-grid { gap: 12px; }
+.workflow-card { min-height: 205px; padding: 19px; border-color: #e7ebe7; border-radius: 5px; }
+.workflow-card:hover { border-color: #a9b8ac; background: #fafbfa; }
+.workflow-number { color: #176c4c; font-size: 13px; }
+.workflow-card-title { color: #202923; font-size: 16px; }
+.workflow-card-copy { color: #58645c; font-size: 13px; line-height: 1.6; }
+.workflow-action { color: #176c4c; font-size: 13px; }
+.section-block { max-width: none; margin-bottom: 38px; }
+.section-heading { margin-bottom: 22px; }
+.section-heading h2, h2 { color: #202923; font-size: 25px; font-weight: 630; letter-spacing: -.55px; }
+.page-title { color: #202923; font-family: inherit; font-size: 32px; font-weight: 650; letter-spacing: -.9px; }
+.section-description { color: #5d6861; font-size: 14px; line-height: 1.6; }
+.asset-card, .vendor-card, .node-directory, .operations-column, .physical-column, .finance-panel, .finding-card, .summary-card, .panel { border-color: #e7ebe7; border-radius: 5px; box-shadow: none; }
+.asset-card { padding: 18px; }
+.asset-card:hover { border-color: #ccd6ce; box-shadow: none; }
+.vendor-section { padding: 22px 0; border-top: 1px solid var(--line); background: #fff; }
+.inventory-layout { grid-template-columns: minmax(0, 1fr) 250px; }
+.inventory-tip { background: #f7f9f7; }
+.risk-toolbar { margin-top: 14px; }
+.filter-tabs { gap: 18px; }
+.filter-tab { color: #4c5951; font-size: 12px; }
+.filter-tab.active { color: #16573e; border-color: #176c4c; }
+.finding-card { background: #fff; }
+.finding-content { padding: 19px 21px; }
+.finding-details { margin-top: 16px; padding-top: 15px; }
+.operations-section, .finance-section { padding: 24px 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: #fff; }
+.operations-layout { gap: 18px; }
+.operations-column, .physical-column, .finance-panel { padding: 18px; }
+.dispatch-card, .incident-card { border-color: #e7ebe7; border-radius: 5px; }
+.finance-metric { border-color: #e7ebe7; border-radius: 5px; }
+.finance-metric.finance-total { background: #173f31; border-color: #173f31; }
+.node-directory { padding: 20px; }
+.map-panel { padding: 18px; }
+.footer { max-width: none; padding: 20px max(calc((100vw - 1160px) / 2), 4vw); border-top-color: #ecefec; }
+.footer, .footer a { color: #59665e; }
+@media (max-width: 1000px) {
+  .topbar { gap: 10px; }
+  .topbar-right { gap: 8px; }
+}
+@media (max-width: 620px) {
+  main { width: calc(100% - 32px); padding-bottom: 44px; }
+  .topbar { padding: 9px 16px; }
+  .hero { padding: 48px 0 34px; }
+  .hero h1 { font-size: 38px; letter-spacing: -1.5px; }
+  .hero-description { font-size: 15px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .summary-card { border-bottom: 1px solid var(--line); }
+  .summary-card:nth-child(2) { border-right: 0; }
+  .summary-card:nth-child(n+3) { border-bottom: 0; }
+  .page-title { font-size: 27px; }
+  .workflow-grid { grid-template-columns: 1fr; }
+  .workflow-card { min-height: 165px; }
+  .inventory-layout { grid-template-columns: 1fr; }
+  .footer { padding-right: 16px; padding-left: 16px; }
+}
