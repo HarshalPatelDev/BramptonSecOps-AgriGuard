@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#102b25">
+    <title>Sign in | AgriGuard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="auth.css">
+    <script src="auth.js" defer></script>
+  </head>
+  <body class="auth-page">
+    <header class="topbar auth-topbar">
+      <a class="brand" href="index.html" aria-label="AgriGuard home">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>AgriGuard<span class="brand-sub">SECURITY PLANNER</span></span>
+      </a>
+      <a class="auth-back-link" href="index.html">Return to the planner</a>
+    </header>
+
+    <main class="auth-main">
+      <section class="auth-card" aria-labelledby="auth-heading">
+        <div class="auth-intro">
+          <p class="eyebrow">CYBER RESILIENCE FOR FOOD OPERATIONS</p>
+          <h1 id="auth-heading">Welcome back.</h1>
+          <p id="auth-description">Sign in to continue to your business risk planner.</p>
+        </div>
+
+        <div class="auth-mode" role="tablist" aria-label="Account access">
+          <button class="auth-mode-button active" id="signin-tab" type="button" role="tab" aria-selected="true" aria-controls="signin-panel">Sign in</button>
+          <button class="auth-mode-button" id="signup-tab" type="button" role="tab" aria-selected="false" aria-controls="signup-panel">Create account</button>
+        </div>
+
+        <div class="auth-demo-notice" role="note">
+          <strong>Prototype preview only.</strong> Authentication is not connected. Do not enter a real password; no account will be created and form data is not saved.
+        </div>
+
+        <form class="auth-form" id="signin-panel" role="tabpanel" aria-labelledby="signin-tab">
+          <label class="auth-field" for="signin-email">Work email</label>
+          <input id="signin-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+
+          <div class="auth-password-heading">
+            <label class="auth-field" for="signin-password">Password</label>
+            <a href="#password-help" class="auth-minor-link" id="password-help-link">Forgot password?</a>
+          </div>
+          <div class="auth-password-wrap">
+            <input id="signin-password" name="password" type="password" autocomplete="current-password" placeholder="Enter a preview password" required>
+            <button class="auth-show-password" type="button" data-toggle-password="signin-password" aria-label="Show password">Show</button>
+          </div>
+          <button class="button button-dark auth-submit" type="submit">Sign in</button>
+        </form>
+
+        <form class="auth-form" id="signup-panel" role="tabpanel" aria-labelledby="signup-tab" hidden>
+          <label class="auth-field" for="signup-name">Your name</label>
+          <input id="signup-name" name="name" autocomplete="name" placeholder="Name" required>
+
+          <label class="auth-field" for="signup-company">Business name</label>
+          <input id="signup-company" name="company" autocomplete="organization" placeholder="Company or organization" required>
+
+          <label class="auth-field" for="signup-email">Work email</label>
+          <input id="signup-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" required>
+
+          <label class="auth-field" for="signup-password">Create password</label>
+          <div class="auth-password-wrap">
+            <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="12" placeholder="At least 12 characters" required>
+            <button class="auth-show-password" type="button" data-toggle-password="signup-password" aria-label="Show password">Show</button>
+          </div>
+          <p class="auth-field-hint">Use at least 12 characters. This preview form does not create an account.</p>
+
+          <label class="auth-consent"><input type="checkbox" required><span>I understand this is a visual prototype and not a secure account signup.</span></label>
+          <button class="button button-dark auth-submit" type="submit">Create account</button>
+        </form>
+
+        <p class="auth-feedback" id="auth-feedback" role="status" aria-live="polite" hidden></p>
+        <p class="auth-footer">Need to explore first? <a href="index.html">Open the local demo</a></p>
+      </section>
+      <aside class="auth-side-note">
+        <div class="auth-side-icon" aria-hidden="true">AG</div>
+        <p class="eyebrow">BUILT FOR CONNECTED OPERATIONS</p>
+        <h2>Know what matters.<br><span>Plan what to do next.</span></h2>
+        <p>AgriGuard connects technology and supplier risks to the real work of receiving ingredients, keeping them safe, processing batches, and delivering to grocery partners.</p>
+        <div class="auth-side-points"><span>01&nbsp; Identify dependencies</span><span>02&nbsp; Prioritize safeguards</span><span>03&nbsp; Track operational impact</span></div>
+      </aside>
+    </main>
+  </body>
+</html>

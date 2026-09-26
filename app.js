@@ -4,6 +4,12 @@ const INCIDENT_STORAGE_KEY = 'agriguard-incidents-v1';
 const NODE_STORAGE_KEY = 'agriguard-network-nodes-v1';
 const VENDOR_STORAGE_KEY = 'agriguard-vendors-v1';
 const NETWORK_ZONES = ['Cloud / SaaS', 'Perimeter / DMZ', 'Internal network', 'Restricted data zone', 'Remote / user devices', 'Not sure'];
+const PROCESS_STAGES = [
+  ['supplier_pickup', 'Supplier pickup'], ['inbound', 'Inbound transport'],
+  ['receiving', 'Receiving / quality check'], ['cold_storage', 'Cold storage'],
+  ['processing', 'Processing / packaging'], ['outbound', 'Outbound transport'],
+  ['grocery_delivery', 'Grocery delivery'], ['completed', 'Completed']
+];
 
 const nowRounded = new Date();
 nowRounded.setMinutes(0, 0, 0);
@@ -14,38 +20,47 @@ const demoTime = offsetHours => {
 
 const demoDispatches = [
   {
-    id: 'load-delivered', name: 'Produce delivery 1042', customer: 'North depot replenishment',
-    cargo: '18 pallets of refrigerated produce', origin: 'Brampton, ON',
-    destination: 'Toronto, ON', plannedEta: demoTime(-2), actualEta: demoTime(-1.5),
-    vehicle: 'Truck 12 / Fleet A', status: 'delivered', delayMinutes: '',
-    reason: '', redundancy: 'Backup refrigerated truck available from partner carrier.',
-    remediation: 'No follow-up required; confirm delivery receipt with depot.'
+    id: 'load-delivered', name: 'Romaine lot RM-26091', customer: 'Green Acres Farm → FreshFields Foods',
+    cargo: '240 crates of romaine lettuce', origin: 'Green Acres Farm, ON',
+    destination: 'FreshFields receiving dock, Brampton, ON', plannedEta: demoTime(-5), actualEta: demoTime(-4),
+    vehicle: 'Reefer truck 12 / Carrier A', status: 'delivered', stage: 'receiving', productValue: '6800', delayMinutes: '',
+    reason: '', redundancy: 'Backup refrigerated carrier confirmed; receiving dock has one alternate unloading bay.',
+    remediation: 'Receiving team completed lot and temperature checks; release accepted crates to cold storage.'
   },
   {
-    id: 'load-transit', name: 'Feed shipment 208', customer: 'West warehouse transfer',
-    cargo: '24 tonnes of bagged livestock feed', origin: 'Brampton, ON',
-    destination: 'Guelph, ON', plannedEta: demoTime(2), actualEta: '',
-    vehicle: 'Truck 08 / Fleet A', status: 'in_transit', delayMinutes: '',
-    reason: '', redundancy: 'Carrier B can dispatch a replacement truck within 90 minutes.',
-    remediation: 'Dispatcher to confirm arrival window with receiving site.'
+    id: 'load-transit', name: 'Salad batch SF-26092', customer: 'FreshFields Foods → North Grocery DC',
+    cargo: '1,200 cases of washed and packaged salad greens', origin: 'FreshFields packaging line, Brampton, ON',
+    destination: 'North Grocery distribution centre, Toronto, ON', plannedEta: demoTime(4), actualEta: '',
+    vehicle: 'Reefer truck 08 / Carrier A', status: 'in_transit', stage: 'grocery_delivery', productValue: '12600', delayMinutes: '',
+    reason: '', redundancy: 'Carrier B has a compatible reefer unit; grocery DC accepts a revised delivery slot.',
+    remediation: 'Operations to confirm arrival window with receiving and preserve temperature log.'
   },
   {
-    id: 'load-canceled', name: 'Cold-chain delivery 317', customer: 'Regional grocery customer',
-    cargo: '12 pallets of chilled dairy', origin: 'Brampton, ON',
-    destination: 'Hamilton, ON', plannedEta: demoTime(-1), actualEta: '',
-    vehicle: 'Truck 03 / Fleet A', status: 'canceled', delayMinutes: '120',
-    reason: 'Refrigeration unit fault discovered before departure.',
-    redundancy: 'No backup refrigerated truck confirmed at dispatch time.',
-    remediation: 'Transfer load to rental reefer unit; inspect and repair Truck 03.'
+    id: 'load-canceled', name: 'Strawberry lot ST-26090', customer: 'Berry Ridge Co-op → FreshFields Foods',
+    cargo: '90 crates of fresh strawberries; 14 crates held for temperature review', origin: 'Berry Ridge Co-op, ON',
+    destination: 'FreshFields cold room, Brampton, ON', plannedEta: demoTime(-8), actualEta: demoTime(-6.5),
+    vehicle: 'Reefer truck 03 / Carrier A', status: 'delivered', stage: 'cold_storage', productValue: '4100', delayMinutes: '',
+    reason: 'Temperature alarm delayed release; 14 crates isolated pending quality review.',
+    redundancy: 'Alternate cold-room capacity available for unaffected product.',
+    remediation: 'Quality lead to document disposition of isolated crates and verify alarm sensor.'
+  },
+  {
+    id: 'load-processing', name: 'Processing batch PR-26093', customer: 'FreshFields Foods production',
+    cargo: 'Romaine and spinach inputs for 800 ready-to-eat salad cases', origin: 'FreshFields cold room, Brampton, ON',
+    destination: 'FreshFields wash and packaging line, Brampton, ON', plannedEta: demoTime(3), actualEta: '',
+    vehicle: 'Wash / pack line 2', status: 'processing', stage: 'processing', productValue: '8500', delayMinutes: '',
+    reason: '', redundancy: 'Line 1 can run a reduced-volume shift if line 2 is unavailable.',
+    remediation: 'Production lead to confirm lot traceability and packaging line availability.'
   }
 ];
 
 const demoIncidents = [
   {
-    id: 'incident-reefer', type: 'Vehicle breakdown', severity: 'medium',
-    description: 'Refrigeration unit fault delayed the chilled dairy dispatch; cargo temperature check required before release.',
-    dispatchId: 'load-canceled', status: 'in_progress', delayMinutes: '120',
-    estimatedCost: '450', remediation: 'Inspect refrigeration unit, document cargo temperature, and confirm replacement reefer availability.',
+    id: 'incident-reefer', type: 'Temperature excursion / spoilage', severity: 'medium',
+    description: 'Temperature alarm on inbound berry lot; 14 of 90 crates isolated pending quality disposition. Remaining product moved to cold storage.',
+    dispatchId: 'load-canceled', status: 'in_progress', delayMinutes: '90',
+    productLoss: '640', salvageValue: '90', disposalCost: '75', delayCost: '260',
+    estimatedCost: '0', remediation: 'Quality lead to inspect temperature history, document lot disposition, and service the reefer alarm sensor.',
     createdAt: new Date().toISOString()
   }
 ];
@@ -56,6 +71,43 @@ const operationalSources = [
   { label: 'NIST SP 800-161 Rev. 1 Update 1: Cybersecurity Supply Chain Risk Management', url: 'https://csrc.nist.gov/pubs/sp/800/161/r1/upd1/final' },
   { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework' }
 ];
+
+const implementationResources = {
+  admin: [
+    { label: 'Microsoft Learn: Active Directory security groups', url: 'https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups', type: 'guide' },
+    { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' }
+  ],
+  mfa: [
+    { label: 'Microsoft Learn: Deploy Microsoft Entra multifactor authentication', url: 'https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-getstarted', type: 'guide' },
+    { label: 'Microsoft Learn: Identity and access training', url: 'https://learn.microsoft.com/en-us/training/browse/?products=entra-id', type: 'training' }
+  ],
+  access: [
+    { label: 'Microsoft Learn: Active Directory security groups', url: 'https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups', type: 'guide' },
+    { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' },
+    { label: 'Microsoft Learn: Identity and access training', url: 'https://learn.microsoft.com/en-us/training/browse/?products=entra-id', type: 'training' }
+  ],
+  backup: [
+    { label: 'NIST SP 800-34: Contingency Planning Guide', url: 'https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final', type: 'guide' },
+    { label: 'NIST CSF 2.0: Recovery and backup outcomes', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+  ],
+  logging: [
+    { label: 'Microsoft Learn: Microsoft Entra audit logs', url: 'https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs', type: 'guide' },
+    { label: 'Microsoft Learn: Identity and access training', url: 'https://learn.microsoft.com/en-us/training/browse/?products=entra-id', type: 'training' }
+  ],
+  exposure: [
+    { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' },
+    { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+  ],
+  owner: [
+    { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+  ]
+};
+
+const microsoftVideoResource = {
+  label: 'Microsoft Learn Shows: product walkthrough videos',
+  url: 'https://learn.microsoft.com/en-us/shows/',
+  type: 'video'
+};
 
 const demoAssets = [
   {
@@ -378,11 +430,13 @@ function renderFindings(findings) {
   const counts = {
     all: findings.length,
     high: findings.filter(item => item.priority === 'high').length,
-    medium: findings.filter(item => item.priority === 'medium').length
+    medium: findings.filter(item => item.priority === 'medium').length,
+    low: findings.filter(item => item.priority === 'low').length
   };
   document.querySelector('#count-all').textContent = counts.all;
   document.querySelector('#count-high').textContent = counts.high;
   document.querySelector('#count-medium').textContent = counts.medium;
+  document.querySelector('#count-low').textContent = counts.low;
   const visible = findings.filter(item => activeFilter === 'all' || item.priority === activeFilter);
   const container = document.querySelector('#finding-list');
   if (!visible.length) {
@@ -394,15 +448,15 @@ function renderFindings(findings) {
       <div class="finding-rail"></div>
       <div class="finding-content">
         <div class="finding-top">
-          <span class="severity-pill">${priority === 'high' ? 'High' : priority === 'medium' ? 'Medium' : 'Review'}</span>
+          <span class="severity-pill">${priority === 'high' ? 'High' : priority === 'medium' ? 'Medium' : 'Low'}</span>
           <div class="finding-title-wrap"><h3 class="finding-title">${escapeHtml(rule.title)}</h3><div class="finding-asset">${escapeHtml(asset.name)} · ${escapeHtml(asset.owner || 'Owner not assigned')}</div></div>
           <div class="score-block"><span class="score-value">${score}</span><span class="score-caption">Risk score</span></div>
         </div>
         <div class="finding-details">
           <div><span class="detail-label">Why it matters</span><p class="detail-copy">${escapeHtml(rule.why(asset))}</p></div>
-          <div><span class="detail-label">Recommended next steps</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p></div>
+          <div><span class="detail-label">Recommended next steps</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p><button class="guide-button" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}" data-asset-id="${escapeHtml(asset.id)}">Open step-by-step guide, images &amp; sources ↗</button></div>
         </div>
-        <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span><button class="learn-link" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}">Why this action? Sources ↗</button></div>
+        <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span></div>
       </div>
     </article>`).join('');
 }
@@ -424,7 +478,7 @@ function taskDelayMinutes(task) {
 
 function humanStatus(status) {
   return ({
-    scheduled: 'Scheduled', in_transit: 'In transit', delayed: 'Delayed',
+    scheduled: 'Scheduled', in_transit: 'In transit', processing: 'Processing', delayed: 'Delayed',
     delivered: 'Delivered', canceled: 'Canceled',
     open: 'Open', in_progress: 'In progress', resolved: 'Resolved'
   })[status] || 'Unknown';
@@ -435,16 +489,96 @@ function renderOperations() {
   const disruptions = dispatches.filter(task => ['delayed', 'canceled'].includes(task.status));
   const totalDelay = dispatches.reduce((sum, task) => sum + taskDelayMinutes(task), 0);
   const openIssues = incidents.filter(issue => issue.status !== 'resolved').length;
-  const estimatedCost = incidents.reduce((sum, issue) => sum + (Number(issue.estimatedCost) || 0), 0);
+  const estimatedCost = incidents.reduce((sum, issue) => sum + incidentOtherCosts(issue), 0);
   document.querySelector('#operations-metrics').innerHTML = `
     <article class="summary-card"><div class="summary-label">Active dispatches</div><div class="summary-value">${active.length}</div><div class="summary-hint">Scheduled, in transit, or awaiting update</div></article>
     <article class="summary-card"><div class="summary-label">Delayed / canceled</div><div class="summary-value ${disruptions.length ? 'priority-med' : ''}">${disruptions.length}</div><div class="summary-hint">Reported dispatch tasks</div></article>
     <article class="summary-card"><div class="summary-label">Recorded delay</div><div class="summary-value">${(totalDelay / 60).toFixed(1)}<span style="font-size:12px;color:#98a49d;font-weight:600"> hrs</span></div><div class="summary-hint">Sum of known task delays; user-entered</div></article>
     <article class="summary-card"><div class="summary-label">Physical issues open</div><div class="summary-value ${openIssues ? 'priority-high' : ''}">${openIssues}</div><div class="summary-hint">Issues still being addressed</div></article>
-    <article class="summary-card"><div class="summary-label">Estimated direct impact</div><div class="summary-value">$${Math.round(estimatedCost).toLocaleString()}<span style="font-size:12px;color:#98a49d;font-weight:600"> CAD</span></div><div class="summary-hint">Optional user-entered estimates</div></article>`;
+    <article class="summary-card"><div class="summary-label">Estimated added costs</div><div class="summary-value">$${Math.round(estimatedCost).toLocaleString()}<span style="font-size:12px;color:#98a49d;font-weight:600"> CAD</span></div><div class="summary-hint">Product loss is shown in the finance dashboard</div></article>`;
 
   renderDispatches();
   renderIncidents();
+  renderFinance();
+}
+
+function money(value) {
+  const amount = Number(value) || 0;
+  return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(amount);
+}
+
+function stageName(stage) {
+  return (PROCESS_STAGES.find(([value]) => value === stage) || [null, stage || 'Stage not recorded'])[1];
+}
+
+function incidentProductLoss(issue) {
+  return Math.max(0, Number(issue.productLoss) || 0);
+}
+
+function incidentSalvage(issue) {
+  return Math.min(incidentProductLoss(issue), Math.max(0, Number(issue.salvageValue) || 0));
+}
+
+function incidentOtherCosts(issue) {
+  const categorized = Math.max(0, Number(issue.disposalCost) || 0) +
+    Math.max(0, Number(issue.delayCost) || 0) +
+    Math.max(0, Number(issue.recoveryCost) || 0) +
+    Math.max(0, Number(issue.otherCost) || 0);
+  return categorized || Math.max(0, Number(issue.estimatedCost) || 0);
+}
+
+function incidentOtherDirectCost(issue) {
+  const categorized = Math.max(0, Number(issue.disposalCost) || 0) +
+    Math.max(0, Number(issue.delayCost) || 0) +
+    Math.max(0, Number(issue.recoveryCost) || 0) +
+    Math.max(0, Number(issue.otherCost) || 0);
+  return categorized ? Math.max(0, Number(issue.otherCost) || 0) : Math.max(0, Number(issue.estimatedCost) || 0);
+}
+
+function renderFinance() {
+  const trackedValue = dispatches.reduce((sum, task) => sum + Math.max(0, Number(task.productValue) || 0), 0);
+  const openValue = dispatches
+    .filter(task => !['delivered', 'canceled'].includes(task.status))
+    .reduce((sum, task) => sum + Math.max(0, Number(task.productValue) || 0), 0);
+  const grossLoss = incidents.reduce((sum, issue) => sum + incidentProductLoss(issue), 0);
+  const salvage = incidents.reduce((sum, issue) => sum + incidentSalvage(issue), 0);
+  const netLoss = Math.max(0, grossLoss - salvage);
+  const otherCosts = incidents.reduce((sum, issue) => sum + incidentOtherCosts(issue), 0);
+  const totalImpact = netLoss + otherCosts;
+  const metrics = [
+    ['Tracked product value', money(trackedValue), 'Sum of records; stage-to-stage values may overlap'],
+    ['Value in open pipeline', money(openValue), 'Open records; may include linked stages of the same goods'],
+    ['Gross reported product loss', money(grossLoss), 'User-entered spoilage / write-off value'],
+    ['Salvage / recovered value', money(salvage), 'Recovered value deducted from net loss'],
+    ['Net product loss', money(netLoss), 'Gross loss less salvage'],
+    ['Total estimated disruption impact', money(totalImpact), 'Net product loss + additional direct costs']
+  ];
+  document.querySelector('#finance-metrics').innerHTML = metrics.map(([label, value, hint], index) =>
+    `<article class="finance-metric ${index === 5 ? 'finance-total' : ''}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><small>${escapeHtml(hint)}</small></article>`
+  ).join('');
+
+  const stages = PROCESS_STAGES.filter(([stage]) => stage !== 'completed').map(([stage, label]) => {
+    const amount = dispatches
+      .filter(task => task.stage === stage && !['delivered', 'canceled'].includes(task.status))
+      .reduce((sum, task) => sum + Math.max(0, Number(task.productValue) || 0), 0);
+    return { label, amount };
+  }).filter(stage => stage.amount > 0);
+  const maxStageValue = Math.max(1, ...stages.map(stage => stage.amount));
+  document.querySelector('#stage-chart').innerHTML = stages.length
+    ? stages.map(stage => `<div class="stage-row"><span>${escapeHtml(stage.label)}</span><div class="stage-bar-track"><i style="width:${Math.max(4, stage.amount / maxStageValue * 100)}%"></i></div><strong>${escapeHtml(money(stage.amount))}</strong></div>`).join('')
+    : '<p class="small-muted">No open product value by stage. Add or update a shipment/batch and enter its tracked value.</p>';
+
+  const parts = [
+    ['Gross product loss', grossLoss, 'loss'],
+    ['Less salvage / recovered', -salvage, 'recovery'],
+    ['Disposal / rework / recovery', incidents.reduce((sum, issue) => sum + (Number(issue.disposalCost) || 0) + (Number(issue.recoveryCost) || 0), 0), 'cost'],
+    ['Delay / replacement', incidents.reduce((sum, issue) => sum + (Number(issue.delayCost) || 0), 0), 'cost'],
+    ['Other direct costs', incidents.reduce((sum, issue) => sum + incidentOtherDirectCost(issue), 0), 'cost'],
+    ['Estimated net impact', totalImpact, 'total']
+  ];
+  document.querySelector('#loss-breakdown').innerHTML = parts.map(([label, amount, type]) =>
+    `<div class="loss-row ${type === 'recovery' ? 'loss-credit' : ''}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(money(amount))}</strong></div>`
+  ).join('');
 }
 
 function mapsDirectionsUrl(task) {
@@ -463,9 +597,10 @@ function renderDispatches() {
     const delay = taskDelayMinutes(task);
     return `<article class="dispatch-card">
       <div class="dispatch-top"><div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
-      <p class="cargo-line"><strong>Cargo:</strong> ${escapeHtml(task.cargo)}</p>
+      <p class="cargo-line"><strong>Ingredient / product:</strong> ${escapeHtml(task.cargo)}</p>
+      <div class="dispatch-stage-line"><span>${escapeHtml(stageName(task.stage))}</span>${task.productValue ? `<strong>${escapeHtml(money(task.productValue))} tracked value</strong>` : '<strong>Value not entered</strong>'}</div>
       <div class="route-line"><span>${escapeHtml(task.origin)}</span><span class="route-arrow" aria-hidden="true">→</span><span>${escapeHtml(task.destination)}</span></div>
-      <div class="task-facts"><span><b>Planned ETA</b>${escapeHtml(formatDate(task.plannedEta))}</span><span><b>Actual arrival</b>${escapeHtml(task.actualEta ? formatDate(task.actualEta) : 'Not yet recorded')}</span><span><b>Truck / carrier</b>${escapeHtml(task.vehicle || 'Not assigned')}</span>${delay ? `<span><b>Recorded delay</b>${delay} minutes</span>` : ''}</div>
+      <div class="task-facts"><span><b>Planned stage ETA</b>${escapeHtml(formatDate(task.plannedEta))}</span><span><b>Actual arrival / complete</b>${escapeHtml(task.actualEta ? formatDate(task.actualEta) : 'Not yet recorded')}</span><span><b>Truck / line</b>${escapeHtml(task.vehicle || 'Not assigned')}</span>${delay ? `<span><b>Recorded delay</b>${delay} minutes</span>` : ''}</div>
       ${task.reason ? `<p class="task-note"><strong>Disruption reason:</strong> ${escapeHtml(task.reason)}</p>` : ''}
       <p class="task-note"><strong>Redundancy:</strong> ${escapeHtml(task.redundancy || 'No fallback recorded')}</p>
       ${task.remediation ? `<p class="task-note"><strong>Next step:</strong> ${escapeHtml(task.remediation)}</p>` : ''}
@@ -487,7 +622,8 @@ function renderIncidents() {
       <h4>${escapeHtml(issue.type)} <span class="severity-inline">${escapeHtml(capitalize(issue.severity))} impact</span></h4>
       <p>${escapeHtml(issue.description)}</p>
       ${relatedTask ? `<p class="incident-related">Related load: ${escapeHtml(relatedTask.name)}</p>` : ''}
-      <div class="incident-metrics">${issue.delayMinutes ? `<span>${escapeHtml(issue.delayMinutes)} min reported delay</span>` : ''}${issue.estimatedCost ? `<span>$${Number(issue.estimatedCost).toLocaleString()} CAD estimated</span>` : ''}</div>
+      <div class="incident-metrics">${issue.delayMinutes ? `<span>${escapeHtml(issue.delayMinutes)} min reported delay</span>` : ''}${issue.estimatedCost && !incidentOtherCosts(issue) ? `<span>${escapeHtml(money(issue.estimatedCost))} legacy estimate</span>` : ''}</div>
+      ${(issue.productLoss || issue.salvageValue || issue.disposalCost || issue.delayCost || issue.otherCost || issue.estimatedCost) ? `<div class="incident-financial"><span>Gross product loss <b>${escapeHtml(money(issue.productLoss))}</b></span><span>Salvage <b>${escapeHtml(money(issue.salvageValue))}</b></span><span>Added costs <b>${escapeHtml(money(incidentOtherCosts(issue)))}</b></span></div>` : ''}
       <p class="task-note"><strong>Remediation:</strong> ${escapeHtml(issue.remediation || 'No remediation step recorded')}</p>
       <span class="incident-date">Reported ${escapeHtml(formatDate(issue.createdAt))}</span>
     </article>`;
@@ -693,9 +829,10 @@ function openDispatchDialog(dispatchId) {
   document.querySelector('#dispatch-dialog h2').textContent = task ? 'Update dispatch task' : 'New dispatch task';
   form.querySelector('[type="submit"]').textContent = task ? 'Update dispatch' : 'Save dispatch';
   if (task) {
-    for (const field of ['name', 'customer', 'cargo', 'origin', 'destination', 'plannedEta', 'vehicle', 'status', 'actualEta', 'delayMinutes', 'reason', 'redundancy', 'remediation']) {
+    for (const field of ['name', 'customer', 'cargo', 'origin', 'destination', 'stage', 'productValue', 'plannedEta', 'vehicle', 'status', 'actualEta', 'delayMinutes', 'reason', 'redundancy', 'remediation']) {
       form.elements[field].value = task[field] || '';
     }
+    if (!task.stage) form.elements.stage.value = 'inbound';
   } else {
     form.elements.plannedEta.value = demoTime(2);
   }
@@ -712,15 +849,59 @@ function openIncidentDialog(incidentId) {
   form.querySelector('[type="submit"]').textContent = issue ? 'Update issue' : 'Save issue';
   document.querySelector('#incident-dispatch').innerHTML = `<option value="">Not linked to a dispatch</option>${dispatches.map(task => `<option value="${escapeHtml(task.id)}">${escapeHtml(task.name)}</option>`).join('')}`;
   if (issue) {
-    for (const field of ['type', 'severity', 'description', 'dispatchId', 'status', 'delayMinutes', 'estimatedCost', 'remediation']) {
+    for (const field of ['type', 'severity', 'description', 'dispatchId', 'status', 'delayMinutes', 'productLoss', 'salvageValue', 'disposalCost', 'delayCost', 'otherCost', 'remediation']) {
       form.elements[field].value = issue[field] || '';
     }
+    if (!issue.otherCost && issue.estimatedCost) form.elements.otherCost.value = issue.estimatedCost;
   }
   document.querySelector('#incident-dialog').showModal();
   form.elements.description.focus();
 }
 
-function openInfoDialog(kind, ruleKey) {
+function guideIllustration(ruleKey, assetName) {
+  const steps = ({
+    admin: ['Named accounts', 'Separate admin role', 'Unique credentials'],
+    mfa: ['Select accounts', 'Require MFA', 'Test recovery'],
+    access: ['Map job duties', 'Create role groups', 'Review membership'],
+    backup: ['Choose critical data', 'Isolate backup', 'Test restore'],
+    logging: ['Enable audit events', 'Protect retention', 'Review alerts'],
+    exposure: ['List public access', 'Restrict entry', 'Monitor changes'],
+    owner: ['Name an owner', 'Assign approvals', 'Review changes']
+  })[ruleKey] || ['Confirm system', 'Apply safeguard', 'Verify result'];
+  return `<figure class="guide-illustration" role="img" aria-label="Implementation flow for ${escapeHtml(assetName)}: ${steps.map(escapeHtml).join(', ')}">
+    <svg viewBox="0 0 720 154" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M172 75H264M418 75H510" stroke="#9ab59d" stroke-width="3" stroke-dasharray="5 5"/>
+      ${steps.map((step, index) => {
+        const x = 18 + index * 246;
+        const color = ['#e9f3ea', '#edf3f5', '#f8f1e7'][index];
+        const label = `${String(index + 1).padStart(2, '0')}  ${step}`;
+        return `<g><rect x="${x}" y="28" width="190" height="92" rx="12" fill="${color}" stroke="#dce7dd"/><circle cx="${x + 27}" cy="55" r="13" fill="#477b56"/><path d="M${x + 21} 55l4 4 8-9" fill="none" stroke="#fff" stroke-width="2"/><text x="${x + 17}" y="89" fill="#315144" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${escapeHtml(label)}</text><text x="${x + 17}" y="105" fill="#829087" font-family="Segoe UI, sans-serif" font-size="9">${index === 0 ? 'Plan with the system owner' : index === 1 ? 'Apply in the product console' : 'Record evidence and review'}</text></g>`;
+      }).join('')}
+    </svg>
+    <figcaption>Illustrative sequence for ${escapeHtml(assetName)}. Exact menu names and capabilities vary by product, license, and deployment.</figcaption>
+  </figure>`;
+}
+
+function implementationSteps(ruleKey, asset) {
+  const microsoft = /microsoft|entra|active directory|\bad\b/i.test(`${asset.name} ${asset.type}`);
+  const product = escapeHtml(asset.name || 'this system');
+  const steps = ({
+    admin: microsoft
+      ? [`In Microsoft Entra admin center or Active Directory Users and Computers, identify the privileged accounts that can administer ${product}.`, 'Create named admin identities and role-appropriate security groups; do not use one shared daily-use administrator login.', 'Rotate vendor/default secrets, store unique credentials securely, protect admin sign-in with MFA, and test a separate recovery account.', 'Review privileged group membership with the system owner and record who approved the change.']
+      : [`Open ${product}'s administration console and identify default, shared, and privileged accounts.`, 'Create individually assigned administrator accounts and role groups; remove default access only after confirming a named recovery path.', 'Set unique credentials, store them in an approved password manager, enable MFA where supported, then test a non-disruptive admin sign-in.', 'Document the account owner and review privileged access after staff or vendor changes.'],
+    mfa: [`List users and privileged/vendor accounts with access to ${product}.`, 'Enable MFA policy in the identity provider or product console, starting with administrators and remote access.', 'Pilot with a small operations group; verify emergency/recovery access before broad rollout.', 'Check sign-in logs for coverage and bypass paths; record exceptions with an owner and expiry.'],
+    access: microsoft
+      ? ['Translate job duties into roles (e.g., dispatch, receiving, production, quality, finance, platform administrator).', 'Create Active Directory security groups or Entra groups for those roles; use clear names and a group owner.', 'Assign product permissions to groups, not broad shared accounts; separate daily users from privileged administrators.', 'Test one account per role, remove excess access, and schedule membership reviews.']
+      : [`List the roles that use ${product} and the business actions each role needs.`, 'Create named groups/roles for dispatch, receiving, production, quality, finance, and administration as applicable.', 'Assign the minimum product permissions to each group and keep administrator access separate.', 'Test representative accounts, remove unneeded access, and schedule owner-approved membership reviews.'],
+    backup: [`Identify product records and operational data required to recover ${product} (e.g., lot traceability, purchase orders, recipes, and delivery commitments).`, 'Confirm backup scope, retention, encryption, and an offline/isolated recovery copy with the provider or IT owner.', 'Run a restore test in a safe location and verify records can be read and reconciled.', 'Record recovery time, owner, and the fallback process for receiving/production while restoration is underway.'],
+    logging: [`Enable sign-in, administrator, data-change, and configuration audit events for ${product}.`, 'Send available logs to a protected location and restrict who can modify or delete them.', 'Assign an owner and review schedule; define which alerts trigger an operations/security escalation.', 'Test that a sample event appears and can be investigated before relying on monitoring.'],
+    exposure: [`Confirm whether ${product} must be reachable from outside the business network and list each public access path.`, 'Remove unused exposure; require named accounts and MFA for approved remote access.', 'Restrict admin access to approved paths, maintain supported versions, and review vendor/API connections.', 'Monitor sign-in and configuration changes; document a rollback and outage contact.'],
+    owner: [`Name a business owner for ${product} and a technical support contact.`, 'Define who approves access, reviews vendor connections, and coordinates incident response.', 'Record an operational workaround if the system is unavailable during receiving, processing, or delivery.', 'Set a review date and update ownership when responsibilities change.']
+  })[ruleKey] || [`Confirm which ${product} setting is missing with the system owner.`, 'Use the vendor documentation and current product interface to apply the change.', 'Test the change with a representative account or safe sample.', 'Record the result, evidence source, owner, and review date.'];
+  return `<ol class="guide-steps">${steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol>`;
+}
+
+function openInfoDialog(kind, ruleKey, assetId) {
   const title = document.querySelector('#info-title');
   const eyebrow = document.querySelector('#info-eyebrow');
   const content = document.querySelector('#info-content');
@@ -730,14 +911,34 @@ function openInfoDialog(kind, ruleKey) {
   if (kind === 'finding') {
     const rule = ruleDefinitions.find(item => item.key === ruleKey);
     if (!rule) return;
+    const asset = assets.find(item => item.id === assetId) || assets[0] || { name: 'the system', type: '', purpose: '', criticality: 'medium', admin: 'unknown', mfa: 'unknown', access: 'unknown', backups: 'unknown', logging: 'unknown', exposure: 'unknown' };
     const codes = rule.controls.map(code => `${code}: ${csfDescriptions[code] || 'Related cybersecurity outcome'}`);
     eyebrow.textContent = 'UNDERSTAND THE CONTROL';
-    title.textContent = rule.title;
-    body = `<p><strong>Why it matters:</strong> ${escapeHtml(rule.why({ admin: 'unknown', mfa: 'unknown', access: 'unknown', backups: 'unknown', logging: 'unknown', exposure: 'unknown' }))}</p>
-      <p><strong>What to do:</strong> ${escapeHtml(rule.action)}</p>
+    title.textContent = `${rule.title} · ${asset.name}`;
+    body = `<p><strong>Business context:</strong> ${escapeHtml(asset.purpose || 'Purpose not recorded. Confirm the process and product owner before making configuration changes.')}. If ${escapeHtml(asset.name)} is unavailable or misused, receiving, cold-storage visibility, processing schedules, lot traceability, or grocery delivery may be affected depending on how your operation uses it.</p>
+      <p><strong>Why this finding appears:</strong> ${escapeHtml(rule.why(asset))}</p>
+      <p><strong>Recommended implementation sequence:</strong></p>
+      ${implementationSteps(rule.key, asset)}
+      ${guideIllustration(rule.key, asset.name)}
       <p><strong>Framework reference:</strong> ${codes.map(escapeHtml).join('; ')}. These are outcome references, not a claim that following one step makes the business compliant.</p>
-      <p class="educational-callout">A control reduces a risk pathway; it cannot guarantee that an incident will not happen. Confirm product-specific settings and assign an owner to verify the change.</p>`;
-    references = [{ label: 'NIST Cybersecurity Framework 2.0 (official)', url: 'https://www.nist.gov/cyberframework' }];
+      <p class="educational-callout">Follow the vendor guide for your exact deployment and license. Test changes safely, preserve a recovery route, and have the system owner verify effectiveness. The diagram is an illustrative image, not a screenshot of your console.</p>`;
+    references = [
+      ...(implementationResources[rule.key] || []),
+      ...( /microsoft|entra|active directory|\bad\b/i.test(`${asset.name} ${asset.type}`) ? [microsoftVideoResource] : []),
+      { label: 'NIST Cybersecurity Framework 2.0 (official)', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+    ];
+    references = [...new Map(references.map(source => [source.url, source])).values()];
+  } else if (kind === 'finance') {
+    eyebrow.textContent = 'FINANCE DASHBOARD METHOD';
+    title.textContent = 'How product-loss and disruption totals are calculated';
+    body = `<p><strong>Tracked product value:</strong> adds the entered estimated value for each shipment or production batch. If the same goods appear in multiple linked stage records, their values can be counted more than once; open pipeline also sums open records rather than unique inventory. This is inventory/throughput context, not sales or revenue.</p>
+      <p><strong>Net product loss:</strong> gross product loss reported in physical issues minus salvage/recovered value, with a floor of zero. Gross loss should represent the written-off quantity/value; salvage should only include value actually recovered or reworked.</p>
+      <p><strong>Estimated disruption impact:</strong> net product loss plus entered disposal/rework, delay/replacement, recovery, and other direct costs. Enter a cost once and link the issue to its shipment/batch to avoid duplicate totals.</p>
+      <p class="educational-callout">Values are user-entered estimates in CAD. They are not accounting entries, insurance valuations, regulatory loss determinations, or proof of cyber causation. Reconcile with finance/quality records before business decisions.</p>`;
+    references = [
+      { label: 'NIST SP 800-34: Contingency Planning Guide', url: 'https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final' },
+      { label: 'NIST SP 800-161: Cybersecurity Supply Chain Risk Management', url: 'https://csrc.nist.gov/pubs/sp/800/161/r1/upd1/final' }
+    ];
   } else {
     eyebrow.textContent = kind === 'centralized' ? 'FUTURE CENTRAL OPERATIONS' : 'TRANSPORT OPERATIONS';
     title.textContent = kind === 'centralized' ? 'What a centralized system needs' : 'How to use dispatch and disruption records';
@@ -747,13 +948,13 @@ function openInfoDialog(kind, ruleKey) {
         <p><strong>Turn updates into work:</strong> recompute deterministic risk rules when verified facts change. If a gap disappears, propose completion for an owner to confirm rather than deleting the remediation record; keep the audit trail and reopen/link a recurrence if the control later fails.</p>
         <p><strong>Make statistics explainable:</strong> label values as measured, source-system reported, dispatcher-entered, or estimated. Preserve units/time windows and avoid double-counting a dispatch delay and its linked incident. Attribute a disruption to cyber activity only when an investigation supports that conclusion.</p>
         <p class="educational-callout">This prototype is not centralized and has no connectors. A production rollout needs a secured backend, identity and authorization, integration agreements, data quality monitoring, audit/retention controls, and tested recovery.</p>`
-      : `<p><strong>Resource flow:</strong> dispatch software coordinates jobs, cargo, assignments, and status. Route-planning tools help a dispatcher compare origin and destination. Telematics can provide vehicle/location signals when an actual integration exists. A backup truck or carrier is operational redundancy, not a software setting.</p>
-        <p><strong>Risk pathway:</strong> an unavailable dispatch system can delay assignments; incorrect route or cargo data can send the wrong load or route; a vehicle or facility fault can affect delivery, product condition, and safety. Record the affected process, reported facts, fallback, and owner of the next action.</p>
-        <p><strong>How statistics work:</strong> dispatch delay is calculated from the entered ETA/actual arrival or delay estimate. Direct-impact totals add optional user-entered incident estimates. These are descriptive records, not verified accounting or proof that cyber activity caused a physical event. A linked incident may describe the same disruption, so do not add its delay again.</p>
-        <p class="educational-callout">Google Maps opens a route-planning page from the entered endpoints. This demo does not embed a live map, read GPS, calculate a reliable operational ETA, notify drivers, or ingest traffic. Dispatchers must verify routes, road conditions, vehicle restrictions, cargo handling, and applicable safety procedures.</p>`;
+      : `<p><strong>Resource flow:</strong> supplier systems record purchase orders and ingredient lots; receiving compares delivered quantity and quality; cold-storage controls temperature and access; processing systems schedule batches and trace inputs to packaged products; outbound systems coordinate grocery delivery.</p>
+        <p><strong>Risk pathway:</strong> if lot, quantity, temperature, recipe, or dispatch records are unavailable or inaccurate, staff may hold safe product, release questionable product, lose traceability, spoil ingredients, or miss a retailer window. Record the source, affected lot/batch, verified impact, fallback, and accountable owner.</p>
+        <p><strong>How statistics work:</strong> arrival delay uses entered planned/actual time or delay estimate. The finance dashboard aggregates user-entered product loss, salvage, and added costs by linked issue. Do not count an issue and a shipment cost twice.</p>
+        <p class="educational-callout">The demo does not ingest ERP/TMS, cold-chain sensors, temperature loggers, GPS, or accounting data. Follow your approved food-safety, quality, recall, and emergency procedures; this tool is not a food-safety authority.</p>`;
   }
   content.innerHTML = body;
-  sources.innerHTML = references.map(source => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)} ↗</a>`).join('');
+  sources.innerHTML = references.map(source => `<a class="source-resource source-${escapeHtml(source.type || 'guide')}" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">${source.type === 'video' ? '▶' : source.type === 'training' ? '▣' : '↗'}</span> ${escapeHtml(source.label)}${source.type === 'video' ? ' · videos' : source.type === 'training' ? ' · guided training' : ''}</a>`).join('');
   document.querySelector('#info-dialog').showModal();
 }
 
@@ -945,7 +1146,7 @@ document.querySelectorAll('[data-info]').forEach(button => button.addEventListen
 }));
 document.querySelector('#finding-list').addEventListener('click', event => {
   const button = event.target.closest('[data-info="finding"]');
-  if (button) openInfoDialog('finding', button.dataset.rule);
+  if (button) openInfoDialog('finding', button.dataset.rule, button.dataset.assetId);
 });
 document.querySelector('#dispatch-form').addEventListener('submit', event => {
   event.preventDefault();
@@ -971,6 +1172,8 @@ document.querySelector('#dispatch-form').addEventListener('submit', event => {
     cargo: String(data.get('cargo')).trim(),
     origin: String(data.get('origin')).trim(),
     destination: String(data.get('destination')).trim(),
+    stage: data.get('stage'),
+    productValue: data.get('productValue'),
     plannedEta: data.get('plannedEta'),
     vehicle: String(data.get('vehicle')).trim(),
     status,
@@ -1001,7 +1204,11 @@ document.querySelector('#incident-form').addEventListener('submit', event => {
     dispatchId: data.get('dispatchId'),
     status: data.get('status'),
     delayMinutes: data.get('delayMinutes'),
-    estimatedCost: data.get('estimatedCost'),
+    productLoss: data.get('productLoss'),
+    salvageValue: data.get('salvageValue'),
+    disposalCost: data.get('disposalCost'),
+    delayCost: data.get('delayCost'),
+    otherCost: data.get('otherCost'),
     remediation: String(data.get('remediation')).trim(),
     createdAt: editingId ? incidents.find(item => item.id === editingId).createdAt : new Date().toISOString()
   };
