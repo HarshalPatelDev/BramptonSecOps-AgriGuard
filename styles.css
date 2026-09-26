@@ -493,3 +493,60 @@ main { width: min(1160px, 100% - 64px); margin: 0 auto; padding: 0 0 72px; }
   .inventory-layout { grid-template-columns: 1fr; }
   .footer { padding-right: 16px; padding-left: 16px; }
 }
+
+/* Warm, calm colours keep priorities and map relationships easy to scan. */
+:root {
+  --ink: #26352d;
+  --muted: #59675e;
+  --green: #347657;
+  --green-dark: #245941;
+  --mint: #eff5ed;
+  --line: #e7e8df;
+  --canvas: #faf9f5;
+  --amber: #8a5c14;
+  --red: #963c34;
+}
+body { background: #faf9f5; }
+.topbar { border-bottom-color: #e7e8df; }
+.brand-mark { background: #347657; color: #fff; }
+.nav-link { color: #44564a; }
+.nav-link:hover { color: #214d39; background: #f3f5ef; }
+.nav-link.active { color: #214d39; }
+.nav-link.active::after { background: #347657; }
+.button-dark { background: #347657; }
+.button-dark:hover { background: #245941; }
+:focus-visible { outline-color: #a35c24; }
+.button:focus-visible, .filter-tab:focus-visible, .map-tab:focus-visible, .asset-menu:focus-visible, .asset-remove:focus-visible, .vendor-delete:focus-visible, .learn-link:focus-visible, .icon-button:focus-visible { outline-color: #a35c24; }
+.notice { background: #f2f4ed; }
+.framework-chip { color: #315e42; background: #eaf1e7; border-color: #d8e2d5; }
+.inventory-tip { background: #f3f5ee; border-color: #e4e8dc; }
+.workflow-card:hover { border-color: #9cb79e; background: #f8faf6; }
+.filter-tab.active { color: #255d40; border-color: #347657; }
+.domain-tab.active { background: #347657; border-color: #347657; }
+.guide-button { color: #315f42; background: #f0f5ed; border-color: #d9e4d6; }
+.guide-button:hover { background: #e9f1e6; border-color: #a9c3aa; }
+.severity-critical .finding-rail { background: #963c34; }
+.severity-critical .severity-pill { color: #792f29; background: #f7e9e5; }
+.severity-high .finding-rail { background: #b36d2e; }
+.severity-high .severity-pill { color: #754319; background: #f8efdf; }
+.severity-medium .finding-rail { background: #8a6c2c; }
+.severity-medium .severity-pill { color: #69501e; background: #f4f0df; }
+.severity-low .finding-rail { background: #4c7a53; }
+.severity-low .severity-pill { color: #315e39; background: #edf3e9; }
+.severity-informational .finding-rail { background: #557283; }
+.severity-informational .severity-pill { color: #395765; background: #edf2f3; }
+.operations-section, .finance-section { background: transparent; }
+.operations-footnote, .educational-callout { color: #4e6153; background: #f0f4eb; }
+.finance-metric.finance-total { background: #2c6045; border-color: #2c6045; }
+.topology-item, .dependency-link { transition: opacity .16s ease, filter .16s ease; }
+.diagram-wrap.has-active-connection .topology-item.is-dimmed { opacity: .22; }
+.diagram-wrap.has-active-connection .dependency-link.is-dimmed { opacity: .08; }
+.topology-item.is-active rect:first-of-type { stroke: #245941; stroke-width: 3; }
+.topology-item.is-connected rect:first-of-type { stroke: #b77732; stroke-width: 2.6; }
+.dependency-link.is-connected { opacity: 1; stroke: #b77732; stroke-width: 3; stroke-dasharray: none; marker-end: url(#arrow-highlight); }
+.topology-item:hover rect:first-of-type, .topology-item:focus rect:first-of-type { stroke: #245941; stroke-width: 2.5; }
+.map-footnote { color: #59675e; }
+.info-dialog::backdrop { background: rgba(38, 53, 45, .42); }
+@media (prefers-reduced-motion: reduce) {
+  .topology-item, .dependency-link { transition: none; }
+}

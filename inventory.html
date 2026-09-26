@@ -65,11 +65,11 @@
           <label class="field">Type
             <select name="type"><option>Identity &amp; access</option><option>Cloud platform</option><option>Business application</option><option>Device / endpoint</option><option>Network / infrastructure</option><option>Data storage</option><option>Backup &amp; recovery</option><option>Other</option></select>
           </label>
-          <label class="field">Business criticality
+          <label class="field">Business importance
             <select name="criticality"><option value="high">High — outage would stop key work</option><option value="medium" selected>Medium — important, workaround exists</option><option value="low">Low — limited business impact</option></select>
           </label>
-          <label class="field">Business domain
-            <select name="domain"><option value="it">Information technology (IT)</option><option value="ot">Operational technology (OT)</option><option value="shared">Shared IT/OT</option></select>
+          <label class="field">Where it is used
+            <select name="domain"><option value="it">Office and business systems (IT)</option><option value="ot">Production and equipment (OT)</option><option value="shared">Shared across office and production</option></select>
           </label>
           <label class="field field-full">What do you use it for, and why?
             <textarea name="purpose" required maxlength="240" rows="2" placeholder="e.g. Stores customer orders and supports online sales"></textarea>
@@ -83,29 +83,29 @@
           <label class="field">Internet exposure
             <select name="exposure"><option value="no">Not directly internet-facing</option><option value="yes">Accessible from the internet</option><option value="unknown" selected>Not sure</option></select>
           </label>
-          <label class="field">Default admin credentials
-            <select name="admin"><option value="changed">Changed; unique credentials are used</option><option value="shared">Shared/default credentials may be in use</option><option value="unknown" selected>Not sure</option></select>
+          <label class="field">Setup passwords and shared accounts
+            <select name="admin"><option value="changed">Setup passwords changed; each person has their own account</option><option value="shared">A shared account or setup password may still be used</option><option value="unknown" selected>Not sure</option></select>
           </label>
-          <label class="field">Multi-factor authentication (MFA)
-            <select name="mfa"><option value="yes">Enabled for users and administrators</option><option value="partial">Enabled for some accounts</option><option value="no">Not enabled</option><option value="unknown" selected>Not sure</option></select>
+          <label class="field">Extra sign-in check
+            <select name="mfa"><option value="yes">Enabled for users and managers</option><option value="partial">Enabled for some accounts</option><option value="no">Not enabled</option><option value="unknown" selected>Not sure</option></select>
           </label>
-          <label class="field">Named roles / groups and least privilege
-            <select name="access"><option value="yes">Defined roles or groups; access is limited</option><option value="no">Permissions are broad or not grouped</option><option value="unknown" selected>Not sure</option></select>
+          <label class="field">Access grouped by job
+            <select name="access"><option value="yes">People are grouped by job and only have needed access</option><option value="no">Access is broad or not grouped</option><option value="unknown" selected>Not sure</option></select>
           </label>
           <label class="field">Backups and recovery
             <select name="backups"><option value="yes">Backups are configured and restore-tested</option><option value="partial">Backups exist; restore not recently tested</option><option value="no">No known backup / recovery plan</option><option value="unknown" selected>Not sure</option></select>
           </label>
-          <label class="field">Security logs and review
-            <select name="logging"><option value="yes">Security logs are enabled and reviewed</option><option value="partial">Some logs exist; review is irregular</option><option value="no">No known logging or review</option><option value="unknown" selected>Not sure</option></select>
+          <label class="field">Records of important activity
+            <select name="logging"><option value="yes">Sign-ins and important changes are recorded and reviewed</option><option value="partial">Some activity is recorded; review is irregular</option><option value="no">No known records or review</option><option value="unknown" selected>Not sure</option></select>
           </label>
-          <label class="field">Where is it hosted?
-            <select name="zone"><option value="Cloud / SaaS">Cloud / SaaS</option><option value="Internal network">Internal network</option><option value="Restricted data zone">Restricted data zone</option><option value="Perimeter / DMZ">Perimeter / DMZ</option><option value="Remote / user devices">Remote / user devices</option><option value="Not sure">Not sure</option></select>
+          <label class="field">Where is it connected?
+            <select name="zone"><option value="Cloud / SaaS">Cloud service</option><option value="Internal network">Company network</option><option value="Restricted data zone">Restricted information area</option><option value="Perimeter / DMZ">Outside-access boundary</option><option value="Remote / user devices">Remote devices</option><option value="Not sure">Not sure</option></select>
           </label>
-          <fieldset class="field field-full cia-fieldset"><legend>Business impact if this system is compromised or unavailable</legend><span class="field-hint">Rate confidentiality, integrity, and availability from the business perspective.</span>
+          <fieldset class="field field-full cia-fieldset"><legend>How could this system affect your business?</legend><span class="field-hint">Consider information privacy, record accuracy, and interruptions to work.</span>
             <div class="cia-inputs">
-              <label class="field">Confidentiality<select name="confidentiality"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high">High</option></select></label>
-              <label class="field">Integrity<select name="integrity"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
-              <label class="field">Availability<select name="availability"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
+              <label class="field">Information privacy<select name="confidentiality"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high">High</option></select></label>
+              <label class="field">Record accuracy<select name="integrity"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
+              <label class="field">Work interruptions<select name="availability"><option value="none">Little / none</option><option value="low">Low</option><option value="medium">Moderate</option><option value="high" selected>High</option></select></label>
             </div>
           </fieldset>
           <label class="field field-full">Depends on other inventoried systems
@@ -128,7 +128,7 @@
           <label class="field field-full">Vendor logo URL (optional; HTTPS only)<input name="logoUrl" type="url" inputmode="url" maxlength="300" placeholder="https://vendor.example/logo.svg"><span class="field-hint">Recognized company names use their logo automatically; this HTTPS URL overrides it. Logo images load from an external host. Unknown names use initials.</span></label>
           <label class="field field-full">What access do they have?<textarea name="access" maxlength="220" rows="2" placeholder="Remote support, portal account, API connection, physical facility access..."></textarea></label>
           <label class="field field-full">What data or resources are shared?<textarea name="data" maxlength="220" rows="2" placeholder="Shipment details, customer information, system configuration, vehicles..."></textarea></label>
-          <label class="field">Business criticality<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>
+          <label class="field">Business importance<select name="criticality"><option value="high">High — interruption stops critical work</option><option value="medium" selected>Medium — workaround exists</option><option value="low">Low — limited impact</option></select></label>
           <label class="field">Internal relationship owner<input name="contact" maxlength="70" placeholder="e.g. Fleet manager / operations lead"></label>
           <label class="field field-full">Connected systems or nodes
             <select name="dependencies" multiple size="5"></select>

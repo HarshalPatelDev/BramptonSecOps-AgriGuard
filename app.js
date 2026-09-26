@@ -106,9 +106,7 @@ const demoIncidents = [
 
 const operationalSources = [
   { label: 'Google Maps URLs: open directions without an API key', url: 'https://developers.google.com/maps/documentation/urls/get-started' },
-  { label: 'Transport Canada: Road safety in Canada', url: 'https://tc.canada.ca/en/road-transportation/road-safety-canada' },
-  { label: 'NIST SP 800-161 Rev. 1 Update 1: Cybersecurity Supply Chain Risk Management', url: 'https://csrc.nist.gov/pubs/sp/800/161/r1/upd1/final' },
-  { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework' }
+  { label: 'Transport Canada: Road safety in Canada', url: 'https://tc.canada.ca/en/road-transportation/road-safety-canada' }
 ];
 
 const implementationResources = {
@@ -125,21 +123,15 @@ const implementationResources = {
     { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' },
     { label: 'Microsoft Learn: Identity and access training', url: 'https://learn.microsoft.com/en-us/training/browse/?products=entra-id', type: 'training' }
   ],
-  backup: [
-    { label: 'NIST SP 800-34: Contingency Planning Guide', url: 'https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final', type: 'guide' },
-    { label: 'NIST CSF 2.0: Recovery and backup outcomes', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
-  ],
+  backup: [],
   logging: [
     { label: 'Microsoft Learn: Microsoft Entra audit logs', url: 'https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs', type: 'guide' },
     { label: 'Microsoft Learn: Identity and access training', url: 'https://learn.microsoft.com/en-us/training/browse/?products=entra-id', type: 'training' }
   ],
   exposure: [
-    { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' },
-    { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+    { label: 'Microsoft Learn: Assign Microsoft Entra roles', url: 'https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal', type: 'guide' }
   ],
-  owner: [
-    { label: 'NIST Cybersecurity Framework 2.0', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
-  ]
+  owner: []
 };
 
 const microsoftVideoResource = {
@@ -183,7 +175,7 @@ const demoNodes = [
   { id: 'node-fw', name: 'Edge firewall', zone: 'Perimeter / DMZ', domain: 'it', purpose: 'Filters inbound/outbound office network traffic.', businessImpact: 'A misconfiguration or outage can expose services or disconnect staff from essential cloud tools.', dependencies: ['router'] },
   { id: 'node-dispatch', name: 'Dispatch workstation', zone: 'Internal network', domain: 'ot', purpose: 'Dispatcher assigns trucks and confirms load status.', businessImpact: 'Lost dispatch access can delay refrigerated pickups and grocery delivery windows.', dependencies: ['farm-erp', 'm365'] },
   { id: 'node-telematics', name: 'Fleet telematics gateway', zone: 'Perimeter / DMZ', domain: 'ot', purpose: 'Receives vehicle location and diagnostic updates.', businessImpact: 'Missing location or reefer status can delay response to a route or temperature incident.', dependencies: ['router'] },
-  { id: 'node-backup', name: 'Recovery admin console', zone: 'Restricted data zone', domain: 'it', purpose: 'Restricted access point for restoration and recovery tasks.', businessImpact: 'If recovery access is unavailable, restore time for orders and operating records can increase.', dependencies: ['nas'] },
+  { id: 'node-backup', name: 'Recovery access system', zone: 'Restricted data zone', domain: 'it', purpose: 'Restricted access point for restoration and recovery tasks.', businessImpact: 'If recovery access is unavailable, restore time for orders and operating records can increase.', dependencies: ['nas'] },
   { id: 'node-yard-tablet', name: 'Yard check-in tablet', zone: 'Remote / user devices', domain: 'ot', purpose: 'Records trailer, driver, and arrival checks at the yard.', businessImpact: 'Incorrect check-in details can misroute a truck or delay the receiving dock.', dependencies: ['node-dispatch', 'm365'] },
   { id: 'node-warehouse-terminal', name: 'Warehouse receiving terminal', zone: 'Internal network', domain: 'ot', purpose: 'Confirms received quantities and flags damaged cargo.', businessImpact: 'Wrong quantity or condition records can lead to incorrect lot release, spoilage, or production delays.', dependencies: ['farm-erp', 'vendor-carrier'] },
   { id: 'node-wifi-ap', name: 'Operations Wi-Fi access point', zone: 'Internal network', domain: 'shared', purpose: 'Provides staff connectivity for dispatch and receiving workflows.', businessImpact: 'Loss of connectivity can slow yard checks, inventory updates, and dispatch communications.', dependencies: ['router', 'node-fw'] }
@@ -192,7 +184,7 @@ const demoNodes = [
 const demoVendors = [
   { id: 'vendor-carrier', name: 'Regional Freight Partner', service: 'Overflow freight and refrigerated truck capacity', zone: 'Cloud / SaaS', domain: 'ot', logoUrl: '', businessImpact: 'If capacity is unavailable, perishable pickups may miss receiving slots and product may remain in transit longer.', access: 'Receives load details and delivery windows; no internal network access.', data: 'Shipment reference, cargo class, pickup/delivery addresses, ETA', dependencies: ['node-dispatch'], criticality: 'high', contact: 'Dispatch coordinator' },
   { id: 'vendor-telematics', name: 'Fleet Telematics Provider', service: 'Vehicle location and diagnostic portal', zone: 'Perimeter / DMZ', domain: 'shared', logoUrl: '', businessImpact: 'A provider outage can reduce visibility into vehicle location and temperature alerts during transit.', access: 'Provider portal uses named fleet-manager accounts; integration method needs verification.', data: 'Vehicle identifiers, location, diagnostics', dependencies: ['node-telematics'], criticality: 'high', contact: 'Fleet manager' },
-  { id: 'vendor-it', name: 'Managed IT Support', service: 'Endpoint and network administration', zone: 'Remote / user devices', domain: 'it', logoUrl: '', businessImpact: 'Delayed support can extend an email, network, or recovery outage that interrupts purchasing and dispatch coordination.', access: 'Remote support access; review named accounts, MFA, and approval process.', data: 'Device/network configuration and support logs', dependencies: ['node-backup', 'router'], criticality: 'medium', contact: 'Operations lead' }
+  { id: 'vendor-it', name: 'Managed IT Support', service: 'Device and network support', zone: 'Remote / user devices', domain: 'it', logoUrl: '', businessImpact: 'Delayed support can extend an email, network, or recovery outage that interrupts purchasing and dispatch coordination.', access: 'Remote support access; review named accounts, extra sign-in checks, and approval process.', data: 'Device/network configuration and support logs', dependencies: ['node-backup', 'router'], criticality: 'medium', contact: 'Operations lead' }
 ];
 
 const typeIcons = {
@@ -208,77 +200,77 @@ const typeIcons = {
 
 const ruleDefinitions = [
   {
-    key: 'admin', title: 'Default or shared administrator credentials',
+    key: 'admin', title: 'Some sign-in details may be shared or unchanged',
     applies: asset => asset.admin === 'shared' || asset.admin === 'unknown',
     base: 57, gap: asset => asset.admin === 'shared' ? 12 : 4,
     why: asset => asset.admin === 'shared'
-      ? 'Shared or unchanged default administrator credentials can let one exposed or reused secret affect the whole system.'
-      : 'The administrator credential state is unknown, so a high-impact entry point may be using a shared or vendor-default secret.',
-    action: 'Change every vendor-default password before use. Give each administrator a unique named account; store distinct strong credentials in an approved password manager, remove shared accounts where supported, and protect admin sign-in with MFA. Verify recovery access and record the review date.',
+      ? 'When people share sign-in details, one leaked password could put the whole system at risk.'
+      : 'It is not clear whether each person has a separate sign-in or whether the original setup password was changed.',
+    action: 'Change any setup password before use. Give each person their own account, and give system managers a separate account for making changes. Save different strong passwords in an approved password manager, add a second sign-in check for managers, test account recovery, and note when this was reviewed.',
     controls: ['PR.AA-01', 'PR.AA-05']
   },
   {
-    key: 'mfa', title: 'Multi-factor authentication coverage is incomplete',
+    key: 'mfa', title: 'Some accounts need an extra sign-in check',
     applies: asset => asset.mfa !== 'yes',
     base: 48, gap: asset => asset.mfa === 'no' ? 11 : asset.mfa === 'partial' ? 6 : 3,
     why: asset => asset.mfa === 'no'
-      ? 'Without MFA, a stolen password may be enough to access this system.'
+      ? 'A stolen password may be enough for someone else to sign in.'
       : asset.mfa === 'partial'
-        ? 'MFA is enabled for only some accounts; users or administrators may still sign in with a password alone.'
-        : 'MFA coverage has not been confirmed, especially for privileged and remote access.',
-    action: 'Enable MFA for all users, starting with administrators, remote access, and accounts that can access sensitive data. Prefer phishing-resistant methods where available; remove legacy sign-in paths that bypass MFA, and test a documented recovery method.',
+        ? 'Some people can still sign in with only a password.'
+        : 'It is not clear whether an extra sign-in check protects every account, especially manager accounts and people working remotely.',
+    action: 'Add a second sign-in check for everyone, starting with system managers and people who sign in remotely. Use the strongest available option, close older sign-in methods that skip the check, and test how staff can recover access.',
     controls: ['PR.AA-03', 'PR.AA-05']
   },
   {
-    key: 'access', title: 'Access roles or permission boundaries need review',
+    key: 'access', title: 'Review who can use or change this system',
     applies: asset => asset.access !== 'yes',
     base: 46, gap: asset => asset.access === 'no' ? 10 : 3,
     why: asset => asset.access === 'no'
-      ? 'Broad or ungrouped permissions make excessive access and accidental changes more likely.'
-      : 'Defined access groups, named roles, and permission review have not been confirmed.',
-    action: 'Define named roles or groups around job duties; grant the minimum permissions each role needs. Use separate administrator accounts, remove dormant access, review membership at least quarterly and when staff change roles, and document who approves access.',
+      ? 'Too many people may be able to see or change more than their jobs require.'
+      : 'It is not clear who can use this system or whether access is reviewed when people change jobs.',
+    action: 'List the jobs that use this system and what each job needs to do. Give each job the access it needs, keep manager access separate, remove access that is no longer needed, and review the list when people change jobs and at least every three months.',
     controls: ['PR.AA-01', 'PR.AA-05', 'GV.RR-02']
   },
   {
-    key: 'owner', title: 'Business ownership is not recorded',
+    key: 'owner', title: 'Choose someone to look after this system',
     applies: asset => !String(asset.owner || '').trim(),
     base: 34, gap: () => 5,
-    why: () => 'Without a named business owner, security decisions, access reviews, and recovery tasks may not have a clear accountable person.',
-    action: 'Assign a role or team responsible for the system. Record who approves access, who reviews important settings, and who coordinates recovery or vendor support when the system is unavailable.',
+    why: () => 'Without a named person or team, important reviews and recovery work may be missed.',
+    action: 'Choose a person or team to look after this system. Note who approves new access, checks important settings, and contacts the supplier if the system stops working.',
     controls: ['GV.RR-02']
   },
   {
-    key: 'backup', title: 'Recovery readiness is unverified',
+    key: 'backup', title: 'Check that important information can be restored',
     applies: asset => asset.backups !== 'yes',
     base: 44, gap: asset => asset.backups === 'no' ? 12 : asset.backups === 'partial' ? 6 : 3,
     why: asset => asset.backups === 'no'
-      ? 'There is no known recovery copy for this important system or its data.'
+      ? 'There may be no safe copy of the information to use if it is lost.'
       : asset.backups === 'partial'
-        ? 'Backups exist, but an untested restore may fail when the business needs it.'
-        : 'Backup scope and restore readiness have not been confirmed.',
-    action: 'Confirm what data and configurations must be recovered, set an appropriate backup schedule and retention, and keep a protected copy separate from normal admin access. Run and document a restore test; make sure recovery access is available if primary accounts are unavailable.',
+        ? 'Copies may exist, but no one has confirmed they can be used to recover the business.'
+        : 'It is not clear what is copied or when anyone last tested getting information back.',
+    action: 'Decide which business information must be saved and how long to keep it. Keep a protected copy separate from everyday accounts. Practice restoring a small sample, write down the result, and make sure someone can reach the saved copy if regular accounts are unavailable.',
     controls: ['PR.DS-11', 'RC.RP-03']
   },
   {
-    key: 'logging', title: 'Security event visibility is limited',
+    key: 'logging', title: 'Important activity may not be easy to review',
     applies: asset => asset.logging !== 'yes',
     base: 39, gap: asset => asset.logging === 'no' ? 9 : asset.logging === 'partial' ? 5 : 3,
     why: asset => asset.logging === 'no'
-      ? 'Without security logs, suspicious sign-ins or changes may go unnoticed.'
+      ? 'Unexpected sign-ins or changes could happen without anyone noticing.'
       : asset.logging === 'partial'
-        ? 'Logs exist but irregular review can delay detection of account misuse or unexpected changes.'
-        : 'Log availability and review have not been confirmed.',
-    action: 'Enable available authentication, administrator, and configuration-change audit logs. Limit who can delete them, retain them for a defined period, and assign someone to review alerts and unusual activity on a regular schedule.',
+        ? 'Some activity is recorded, but no one may be checking it often enough to spot a problem.'
+        : 'It is not clear whether important sign-ins and changes are recorded or reviewed.',
+    action: 'Turn on records of sign-ins, manager actions, and important changes. Limit who can erase them, keep them for an agreed period, and choose someone to check for unusual activity regularly.',
     controls: ['PR.PS-04', 'DE.CM-03']
   },
   {
-    key: 'exposure', title: 'Internet exposure needs a deliberate access boundary',
+    key: 'exposure', title: 'Review who can reach this system online',
     applies: asset => asset.exposure === 'yes' || asset.exposure === 'unknown',
     base: 40, gap: asset => asset.exposure === 'yes' ? 8 : 3,
     why: asset => asset.exposure === 'yes'
-      ? 'Internet-accessible systems receive direct attention from automated attacks and need a tightly managed entry path.'
-      : 'The system’s internet exposure is unknown; an unintended public endpoint could widen the attack surface.',
-    action: 'Confirm whether public access is required. Remove unused public endpoints; restrict required access to named users and approved paths, enforce MFA, keep supported software updated, and monitor sign-in and administrative activity. For network services, review firewall rules with the system owner.',
+      ? 'Anyone online can try to reach this system, so check that only the right people can get in.'
+      : 'It is not clear whether people outside your business can reach this system.',
+    action: 'Check whether people need to reach this system from outside the business. Close access that is not needed, limit any remaining access to named people, add a second sign-in check, keep the system updated, and ask the system owner to review outside-access settings.',
     controls: ['PR.IR-01', 'PR.AA-03', 'DE.CM-01']
   }
 ];
@@ -432,6 +424,17 @@ function riskPriority(score) {
         : score >= 35 ? 'low' : 'informational';
 }
 
+function priorityLabel(priority) {
+  return ({
+    critical: 'Act now',
+    high: 'Next up',
+    medium: 'Plan a fix',
+    low: 'Keep an eye on it',
+    informational: 'Good to know',
+    na: 'Not reviewed'
+  })[priority] || 'Review';
+}
+
 function impactScenario(asset, rule) {
   const domain = businessDomain(asset);
   const c = ciaRating(asset, 'confidentiality');
@@ -454,7 +457,7 @@ function impactScenario(asset, rule) {
   if (String(asset.businessImpact || '').trim()) {
     scenarios.push(`For this operation, the recorded consequence is: ${asset.businessImpact}`);
   }
-  return scenarios.length ? scenarios.join(' ') : `${rule.why(asset)} The current record indicates limited CIA impact; verify this with the process owner.`;
+  return scenarios.length ? scenarios.join(' ') : `${rule.why(asset)} Confirm the possible effect with the person responsible for this process.`;
 }
 
 function assess() {
@@ -487,13 +490,12 @@ function renderSummary(findings) {
   const high = findings.filter(item => item.priority === 'high').length;
   const critical = findings.filter(item => item.priority === 'critical').length;
   const medium = findings.filter(item => item.priority === 'medium').length;
-  const topScore = findings.length ? findings[0].score : 0;
-  const average = findings.length ? Math.round(findings.reduce((sum, item) => sum + item.score, 0) / findings.length) : 0;
+  const lowerPriority = findings.filter(item => ['low', 'informational'].includes(item.priority)).length;
   summary.innerHTML = `
-    <article class="summary-card"><div class="summary-label">Systems inventoried</div><div class="summary-value">${assets.length}</div><div class="summary-hint">Across your business</div></article>
-    <article class="summary-card"><div class="summary-label">Critical / high risks</div><div class="summary-value ${critical || high ? 'priority-high' : ''}">${critical + high}</div><div class="summary-hint">${critical} critical · ${high} high</div></article>
-    <article class="summary-card"><div class="summary-label">Other gaps to review</div><div class="summary-value ${medium ? 'priority-med' : ''}">${medium + findings.filter(item => item.priority === 'low').length}</div><div class="summary-hint">${medium} medium · ${findings.filter(item => item.priority === 'low').length} lower priority</div></article>
-    <article class="summary-card"><div class="summary-label">Highest risk score</div><div class="summary-value">${topScore}<span style="font-size:12px;color:#98a49d;font-weight:600"> / 100</span></div><div class="summary-hint">Average finding score: ${average}</div></article>`;
+    <article class="summary-card"><div class="summary-label">Systems and services</div><div class="summary-value">${assets.length}</div><div class="summary-hint">Added to your inventory</div></article>
+    <article class="summary-card"><div class="summary-label">Act soon</div><div class="summary-value ${critical || high ? 'priority-high' : ''}">${critical + high}</div><div class="summary-hint">Items that need timely attention</div></article>
+    <article class="summary-card"><div class="summary-label">Plan and review</div><div class="summary-value ${medium ? 'priority-med' : ''}">${medium + lowerPriority}</div><div class="summary-hint">${medium} planned · ${lowerPriority} lower priority</div></article>
+    <article class="summary-card"><div class="summary-label">Top priority</div><div class="summary-value">${findings.length ? escapeHtml(priorityLabel(findings[0].priority)) : 'All clear'}</div><div class="summary-hint">Based on the details provided</div></article>`;
 }
 
 function renderAssets() {
@@ -600,34 +602,28 @@ function renderFindings(findings) {
   document.querySelector('#count-medium').textContent = counts.medium;
   document.querySelector('#count-low').textContent = counts.low;
   document.querySelector('#count-informational').textContent = counts.informational;
-  document.querySelector('#count-na').textContent = counts.na;
+  const naCount = document.querySelector('#count-na');
+  if (naCount) naCount.textContent = counts.na;
   const visible = findings.filter(item => activeFilter === 'all' || item.priority === activeFilter);
   if (!visible.length) {
     const emptyMessage = activeFilter === 'na'
-      ? 'Not applicable findings are not scored by this prototype. Marking a control N/A requires an owner-reviewed applicability decision.'
-      : findings.length ? 'No findings in this priority group.' : 'No gaps identified from the answers provided. Confirm settings in each product before treating a control as verified.';
+      ? 'No items have been marked as not relevant. Ask the person responsible before choosing this option.'
+      : findings.length ? 'Nothing in this group needs attention right now.' : 'No issues were found in the details provided. Check the settings in each product to confirm they are correct.';
     container.innerHTML = `<div class="no-findings">${emptyMessage}</div>`;
     return;
   }
-  container.innerHTML = visible.map(({ asset, rule, score, priority }) => `
+  container.innerHTML = visible.map(({ asset, rule, priority }) => `
     <article class="finding-card severity-${priority}">
       <div class="finding-rail"></div>
       <div class="finding-content">
         <div class="finding-top">
-          <span class="severity-pill">${priority === 'critical' ? 'Critical' : priority === 'high' ? 'High' : priority === 'medium' ? 'Moderate' : priority === 'low' ? 'Low' : 'Informational'}</span>
-          <div class="finding-title-wrap"><h3 class="finding-title">${escapeHtml(rule.title)}</h3><div class="finding-asset">${escapeHtml(asset.name)} · ${escapeHtml(asset.owner || 'Owner not assigned')} · ${escapeHtml(domainLabel(businessDomain(asset)))}</div></div>
-          <div class="score-block"><span class="score-value">${score}</span><span class="score-caption">Risk score</span></div>
+          <span class="severity-pill">${escapeHtml(priorityLabel(priority))}</span>
+          <div class="finding-title-wrap"><h3 class="finding-title">${escapeHtml(rule.title)}</h3><div class="finding-asset">${escapeHtml(asset.name)} · ${escapeHtml(asset.owner || 'Person responsible not assigned')}</div></div>
         </div>
         <div class="finding-details">
-          <div><span class="detail-label">Potential business impact scenario</span><p class="detail-copy">${escapeHtml(impactScenario(asset, rule))}</p></div>
-          <div><span class="detail-label">Recommended next steps</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p><button class="guide-button" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}" data-asset-id="${escapeHtml(asset.id)}">Open step-by-step guide, images &amp; sources ↗</button></div>
+          <div><span class="detail-label">What could happen</span><p class="detail-copy">${escapeHtml(impactScenario(asset, rule))}</p></div>
+          <div><span class="detail-label">What to do next</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p><button class="guide-button" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}" data-asset-id="${escapeHtml(asset.id)}">See simple steps and trusted guides ↗</button></div>
         </div>
-        <div class="cia-impact" aria-label="Confidentiality, integrity, and availability impact">
-          <span><abbr title="Confidentiality">C</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'confidentiality')))}</span>
-          <span><abbr title="Integrity">I</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'integrity')))}</span>
-          <span><abbr title="Availability">A</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'availability')))}</span>
-        </div>
-        <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span></div>
       </div>
     </article>`).join('');
 }
@@ -862,14 +858,14 @@ function renderDiagram() {
       });
     });
   }
-  let markup = `<svg class="diagram-svg ${activeMap === 'topology' ? 'topology-svg' : ''}" style="width:${width}px;height:${height}px" viewBox="0 0 ${width} ${height}" role="img" aria-label="${activeMap === 'assets' ? 'Asset dependency graph' : activeMap === 'network' ? 'Network zones with connected nodes and third parties' : 'Full supply chain and network topology'}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#8ba092" stroke-width="1.2"/></marker></defs>`;
+  let markup = `<svg class="diagram-svg ${activeMap === 'topology' ? 'topology-svg' : ''}" style="width:${width}px;height:${height}px" viewBox="0 0 ${width} ${height}" role="img" aria-label="${activeMap === 'assets' ? 'Asset dependency graph' : activeMap === 'network' ? 'Network zones with connected nodes and third parties' : 'Full supply chain and network topology'}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#89978c" stroke-width="1.2"/></marker><marker id="arrow-highlight" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="#b77732" stroke-width="1.6"/></marker></defs>`;
   if (activeMap === 'topology') {
     tierKinds.forEach((kinds, tierIndex) => {
       const entities = items.filter(item => kinds.includes(item.kind));
       const tierY = Math.min(...entities.map(item => positions.get(item.id).y)) - nodeHeight / 2 - 25;
       const tierHeight = Math.max(96, Math.max(...zones.map(zone => entities.filter(item => item.zone === zone).length), 1) * 79 + 36);
-      markup += `<rect x="5" y="${tierY}" width="${width - 10}" height="${tierHeight}" rx="8" fill="${tierIndex % 2 ? '#f5f8f5' : '#edf4ee'}" stroke="#e2ebe3"/>`;
-      markup += `<text x="17" y="${tierY + 18}" fill="#60766a" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(tierNames[tierIndex])}</text>`;
+      markup += `<rect x="5" y="${tierY}" width="${width - 10}" height="${tierHeight}" rx="8" fill="${tierIndex % 2 ? '#fbf8f1' : '#f4f7f2'}" stroke="#e7e9e2"/>`;
+      markup += `<text x="17" y="${tierY + 18}" fill="#5a675e" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(tierNames[tierIndex])}</text>`;
     });
   }
   if (activeMap !== 'assets') {
@@ -877,8 +873,8 @@ function renderDiagram() {
       const x = index * columnWidth + 5;
       const y = activeMap === 'topology' ? 5 : 10;
       const boxHeight = activeMap === 'topology' ? height - 10 : height - 18;
-      markup += `<rect x="${x}" y="${y}" width="${columnWidth - 10}" height="${boxHeight}" rx="8" fill="none" stroke="#dce6dd" stroke-dasharray="${activeMap === 'topology' ? '0' : '4 4'}"/>`;
-      markup += `<text x="${x + 9}" y="${activeMap === 'topology' ? 43 : 31}" fill="#45634e" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(zone)}</text>`;
+      markup += `<rect x="${x}" y="${y}" width="${columnWidth - 10}" height="${boxHeight}" rx="8" fill="none" stroke="#e5e7e0" stroke-dasharray="${activeMap === 'topology' ? '0' : '4 4'}"/>`;
+      markup += `<text x="${x + 9}" y="${activeMap === 'topology' ? 43 : 31}" fill="#56665b" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(zone)}</text>`;
     });
   } else {
     markup += `<text x="14" y="26" fill="#63776a" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">Business technology assets</text>`;
@@ -893,7 +889,7 @@ function renderDiagram() {
         const direction = to.x >= from.x ? 1 : -1;
         const bend = Math.max(24, Math.abs(to.x - from.x) * .32);
         const cy = from.y + (to.y - from.y) * .5;
-        markup += `<path d="M ${from.x} ${from.y} C ${from.x + bend * direction} ${cy}, ${to.x - bend * direction} ${cy}, ${to.x} ${to.y}" fill="none" stroke="#8da293" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>`;
+        markup += `<path class="dependency-link" data-source-id="${escapeHtml(item.id)}" data-target-id="${escapeHtml(dependencyId)}" d="M ${from.x} ${from.y} C ${from.x + bend * direction} ${cy}, ${to.x - bend * direction} ${cy}, ${to.x} ${to.y}" fill="none" stroke="#8da293" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>`;
       });
     });
   }
@@ -903,9 +899,9 @@ function renderDiagram() {
     const x = point.x - nodeWidth / 2;
     const y = point.y - nodeHeight / 2;
     const palettes = {
-      asset: ['#eaf3eb', '#d6e6d8', '#78a982'],
-      node: ['#edf3f5', '#d5e1e5', '#7599a8'],
-      vendor: ['#f8f1e7', '#eadcc3', '#c18a3d']
+      asset: ['#eef5ee', '#d6e5d7', '#61966d'],
+      node: ['#edf3f6', '#d5e1e8', '#668ba0'],
+      vendor: ['#fbf2df', '#eddfb9', '#b98736']
     };
     const [fill, stroke, dot] = palettes[item.kind];
     const title = item.name.length > 27 ? `${item.name.slice(0, 26)}…` : item.name;
@@ -916,7 +912,7 @@ function renderDiagram() {
     const kindLabel = item.kind === 'vendor' ? 'VENDOR' : item.kind === 'node' ? 'NODE' : 'ASSET';
     const domain = domainLabel(businessDomain(item));
     const logoUrl = resolvedLogoUrl(`${item.name} ${item.type || ''} ${item.service || ''} ${item.purpose || ''}`, item.logoUrl);
-    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)}, ${domain}, in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${domain}; ${escapeHtml(item.zone)}).${escapeHtml(impactText)}</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><rect x="${x + 7}" y="${y + 8}" width="20" height="20" rx="4" fill="#fff" stroke="#e6ebe7"/><text x="${x + 17}" y="${y + 21}" text-anchor="middle" fill="#52685a" font-size="8" font-family="Segoe UI, sans-serif" font-weight="700">${monogram(item.name)}</text>${logoUrl ? `<image class="topology-logo" href="${escapeHtml(logoUrl)}" x="${x + 8}" y="${y + 9}" width="18" height="18" preserveAspectRatio="xMidYMid meet"/>` : ''}<text x="${x + 34}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 34}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${domain} · ${escapeHtml(detail)}</text></g>`;
+    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)}, ${domain}, in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${domain}; ${escapeHtml(item.zone)}).${escapeHtml(impactText)}</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><rect x="${x + 7}" y="${y + 8}" width="20" height="20" rx="4" fill="#fff" stroke="#e6ebe7"/><text x="${x + 17}" y="${y + 21}" text-anchor="middle" fill="#52685a" font-size="8" font-family="Segoe UI, sans-serif" font-weight="700">${monogram(item.name)}</text>${logoUrl ? `<image class="topology-logo" href="${escapeHtml(logoUrl)}" x="${x + 8}" y="${y + 9}" width="18" height="18" preserveAspectRatio="xMidYMid meet"/>` : ''}<text x="${x + 34}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 34}" y="${y + 37}" fill="#68776d" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${domain} · ${escapeHtml(detail)}</text></g>`;
   });
   if (activeMap !== 'network' && items.every(item => !item.dependencies?.length)) {
     markup += `<text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#94a098" font-size="9" font-family="Segoe UI, sans-serif">No dependencies recorded yet — add links when editing a node, technology, or vendor.</text>`;
@@ -924,10 +920,54 @@ function renderDiagram() {
   markup += '</svg>';
   host.innerHTML = markup;
   footnote.textContent = activeMap === 'assets'
-    ? 'Technology assets only. Arrows show dependencies you entered, not observed network traffic.'
+    ? 'Hover over or focus a system to highlight what it connects to. Lines show connections entered by you.'
     : activeMap === 'network'
-      ? 'All recorded assets, nodes, and vendors are grouped into their declared zones; connections are omitted in this view.'
-      : 'Combined view: vendors/services, business assets, and network nodes are arranged in tiers across zones. Arrows are declared dependencies, not live connections.';
+      ? 'Systems, suppliers, and equipment are grouped by the area where they are used.'
+      : 'Hover over or focus a system to highlight its direct connections. These links are entered by you, not detected automatically.';
+}
+
+function highlightMapConnections(itemId) {
+  const host = document.querySelector('#diagram');
+  if (!host) return;
+  const entries = topologyItems();
+  const selected = entries.find(item => item.id === itemId);
+  if (!selected) return;
+  const connectedIds = new Set([itemId, ...(selected.dependencies || [])]);
+  entries.forEach(item => {
+    if (item.dependencies?.includes(itemId)) connectedIds.add(item.id);
+  });
+  host.classList.add('has-active-connection');
+  host.querySelectorAll('.topology-item').forEach(node => {
+    const active = node.dataset.mapId === itemId;
+    const connected = !active && connectedIds.has(node.dataset.mapId);
+    node.classList.toggle('is-active', active);
+    node.classList.toggle('is-connected', connected);
+    node.classList.toggle('is-dimmed', !active && !connected);
+  });
+  host.querySelectorAll('.dependency-link').forEach(link => {
+    const connected = link.dataset.sourceId === itemId || link.dataset.targetId === itemId;
+    link.classList.toggle('is-connected', connected);
+    link.classList.toggle('is-dimmed', !connected);
+  });
+  const footnote = document.querySelector('#map-footnote');
+  if (footnote) footnote.textContent = `${selected.name} and its direct connections are highlighted.`;
+}
+
+function clearMapConnectionHighlight() {
+  const host = document.querySelector('#diagram');
+  if (!host) return;
+  host.classList.remove('has-active-connection');
+  host.querySelectorAll('.is-active, .is-connected, .is-dimmed').forEach(element => {
+    element.classList.remove('is-active', 'is-connected', 'is-dimmed');
+  });
+  const footnote = document.querySelector('#map-footnote');
+  if (footnote) {
+    footnote.textContent = activeMap === 'assets'
+      ? 'Hover over or focus a system to highlight what it connects to. Lines show connections entered by you.'
+      : activeMap === 'network'
+        ? 'Systems, suppliers, and equipment are grouped by the area where they are used.'
+        : 'Hover over or focus a system to highlight its direct connections. These links are entered by you, not detected automatically.';
+  }
 }
 
 function capitalize(value) {
@@ -1053,11 +1093,11 @@ function openIncidentDialog(incidentId) {
 
 function guideIllustration(ruleKey, assetName) {
   const steps = ({
-    admin: ['Named accounts', 'Separate admin role', 'Unique credentials'],
-    mfa: ['Select accounts', 'Require MFA', 'Test recovery'],
+    admin: ['One account per person', 'Separate manager access', 'Different sign-in details'],
+    mfa: ['List people who sign in', 'Add a second sign-in check', 'Test account recovery'],
     access: ['Map job duties', 'Create role groups', 'Review membership'],
     backup: ['Choose critical data', 'Isolate backup', 'Test restore'],
-    logging: ['Enable audit events', 'Protect retention', 'Review alerts'],
+    logging: ['Record important activity', 'Protect the records', 'Review unusual activity'],
     exposure: ['List public access', 'Restrict entry', 'Monitor changes'],
     owner: ['Name an owner', 'Assign approvals', 'Review changes']
   })[ruleKey] || ['Confirm system', 'Apply safeguard', 'Verify result'];
@@ -1068,7 +1108,7 @@ function guideIllustration(ruleKey, assetName) {
         const x = 18 + index * 246;
         const color = ['#e9f3ea', '#edf3f5', '#f8f1e7'][index];
         const label = `${String(index + 1).padStart(2, '0')}  ${step}`;
-        return `<g><rect x="${x}" y="28" width="190" height="92" rx="12" fill="${color}" stroke="#dce7dd"/><circle cx="${x + 27}" cy="55" r="13" fill="#477b56"/><path d="M${x + 21} 55l4 4 8-9" fill="none" stroke="#fff" stroke-width="2"/><text x="${x + 17}" y="89" fill="#315144" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${escapeHtml(label)}</text><text x="${x + 17}" y="105" fill="#829087" font-family="Segoe UI, sans-serif" font-size="9">${index === 0 ? 'Plan with the system owner' : index === 1 ? 'Apply in the product console' : 'Record evidence and review'}</text></g>`;
+        return `<g><rect x="${x}" y="28" width="190" height="92" rx="12" fill="${color}" stroke="#dce7dd"/><circle cx="${x + 27}" cy="55" r="13" fill="#477b56"/><path d="M${x + 21} 55l4 4 8-9" fill="none" stroke="#fff" stroke-width="2"/><text x="${x + 17}" y="89" fill="#315144" font-family="Segoe UI, sans-serif" font-size="12" font-weight="700">${escapeHtml(label)}</text><text x="${x + 17}" y="105" fill="#829087" font-family="Segoe UI, sans-serif" font-size="9">${index === 0 ? 'Plan with the system owner' : index === 1 ? 'Apply in system settings' : 'Record what changed'}</text></g>`;
       }).join('')}
     </svg>
     <figcaption>Illustrative sequence for ${escapeHtml(assetName)}. Exact menu names and capabilities vary by product, license, and deployment.</figcaption>
@@ -1080,15 +1120,15 @@ function implementationSteps(ruleKey, asset) {
   const product = escapeHtml(asset.name || 'this system');
   const steps = ({
     admin: microsoft
-      ? [`In Microsoft Entra admin center or Active Directory Users and Computers, identify the privileged accounts that can administer ${product}.`, 'Create named admin identities and role-appropriate security groups; do not use one shared daily-use administrator login.', 'Rotate vendor/default secrets, store unique credentials securely, protect admin sign-in with MFA, and test a separate recovery account.', 'Review privileged group membership with the system owner and record who approved the change.']
-      : [`Open ${product}'s administration console and identify default, shared, and privileged accounts.`, 'Create individually assigned administrator accounts and role groups; remove default access only after confirming a named recovery path.', 'Set unique credentials, store them in an approved password manager, enable MFA where supported, then test a non-disruptive admin sign-in.', 'Document the account owner and review privileged access after staff or vendor changes.'],
-    mfa: [`List users and privileged/vendor accounts with access to ${product}.`, 'Enable MFA policy in the identity provider or product console, starting with administrators and remote access.', 'Pilot with a small operations group; verify emergency/recovery access before broad rollout.', 'Check sign-in logs for coverage and bypass paths; record exceptions with an owner and expiry.'],
+      ? [`In your Microsoft sign-in management page or Windows account tools, find the accounts that can change settings for ${product}.`, 'Give each person their own work account and create separate accounts for people who manage settings.', 'Change setup passwords, save different strong passwords safely, add a second sign-in check for managers, and test account recovery.', 'Review who can manage accounts with the system owner and note who approved the list.']
+      : [`Open ${product}'s settings and find accounts that can make important changes.`, 'Give each person their own work account and separate accounts to manage settings.', 'Change setup passwords, save different strong passwords in an approved password manager, add a second sign-in check for managers, and test account recovery.', 'Choose who reviews manager access and check it when staff or suppliers change.'],
+    mfa: [`List everyone who signs in to ${product}, including managers and suppliers.`, 'Turn on a second sign-in check for everyone, starting with managers and people working remotely.', 'Try it with a small group and confirm they can still get help if they lose access to a device.', 'Review sign-in history for accounts that do not have the extra check and record any approved exceptions.'],
     access: microsoft
-      ? ['Translate job duties into roles (e.g., dispatch, receiving, production, quality, finance, platform administrator).', 'Create Active Directory security groups or Entra groups for those roles; use clear names and a group owner.', 'Assign product permissions to groups, not broad shared accounts; separate daily users from privileged administrators.', 'Test one account per role, remove excess access, and schedule membership reviews.']
-      : [`List the roles that use ${product} and the business actions each role needs.`, 'Create named groups/roles for dispatch, receiving, production, quality, finance, and administration as applicable.', 'Assign the minimum product permissions to each group and keep administrator access separate.', 'Test representative accounts, remove unneeded access, and schedule owner-approved membership reviews.'],
+      ? ['List the jobs that use this system, such as dispatch, receiving, production, quality, or finance.', 'In Microsoft account settings, group people by job and give each group a clear name and a person responsible for it.', 'Give each group only the access it needs; keep everyday work separate from account-management tasks.', 'Test access with a sample account, remove anything not needed, and review the list when jobs change.']
+      : [`List the jobs that use ${product} and the actions each job needs to take.`, 'Group people by job and give each group a clear name and a person responsible for it.', 'Give each group only the access it needs and keep everyday work separate from account-management tasks.', 'Test access with sample accounts, remove anything not needed, and review the list when jobs change.'],
     backup: [`Identify product records and operational data required to recover ${product} (e.g., lot traceability, purchase orders, recipes, and delivery commitments).`, 'Confirm backup scope, retention, encryption, and an offline/isolated recovery copy with the provider or IT owner.', 'Run a restore test in a safe location and verify records can be read and reconciled.', 'Record recovery time, owner, and the fallback process for receiving/production while restoration is underway.'],
-    logging: [`Enable sign-in, administrator, data-change, and configuration audit events for ${product}.`, 'Send available logs to a protected location and restrict who can modify or delete them.', 'Assign an owner and review schedule; define which alerts trigger an operations/security escalation.', 'Test that a sample event appears and can be investigated before relying on monitoring.'],
-    exposure: [`Confirm whether ${product} must be reachable from outside the business network and list each public access path.`, 'Remove unused exposure; require named accounts and MFA for approved remote access.', 'Restrict admin access to approved paths, maintain supported versions, and review vendor/API connections.', 'Monitor sign-in and configuration changes; document a rollback and outage contact.'],
+    logging: [`Turn on records of sign-ins, manager actions, and important changes in ${product}.`, 'Save these records somewhere protected and limit who can erase them.', 'Choose someone to check the records regularly and decide which unusual activity needs follow-up.', 'Make a test change and confirm it appears in the records before relying on them.'],
+    exposure: [`Check whether anyone needs to use ${product} from outside the business and list the ways they can reach it.`, 'Close access that is not needed and add a second sign-in check for approved remote access.', 'Limit manager access, keep the system updated, and review connections to other companies or services.', 'Check sign-in and change history regularly and write down how to undo a change or get help.'],
     owner: [`Name a business owner for ${product} and a technical support contact.`, 'Define who approves access, reviews vendor connections, and coordinates incident response.', 'Record an operational workaround if the system is unavailable during receiving, processing, or delivery.', 'Set a review date and update ownership when responsibilities change.']
   })[ruleKey] || [`Confirm which ${product} setting is missing with the system owner.`, 'Use the vendor documentation and current product interface to apply the change.', 'Test the change with a representative account or safe sample.', 'Record the result, evidence source, owner, and review date.'];
   return `<ol class="guide-steps">${steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol>`;
@@ -1105,25 +1145,21 @@ function openInfoDialog(kind, ruleKey, assetId) {
     const rule = ruleDefinitions.find(item => item.key === ruleKey);
     if (!rule) return;
     const asset = assets.find(item => item.id === assetId) || assets[0] || { name: 'the system', type: '', purpose: '', criticality: 'medium', admin: 'unknown', mfa: 'unknown', access: 'unknown', backups: 'unknown', logging: 'unknown', exposure: 'unknown' };
-    const codes = rule.controls.map(code => `${code}: ${csfDescriptions[code] || 'Related cybersecurity outcome'}`);
-    eyebrow.textContent = 'UNDERSTAND THE CONTROL';
+    eyebrow.textContent = 'WHY THIS MATTERS';
     title.textContent = `${rule.title} · ${asset.name}`;
-    body = `<p><strong>Business context:</strong> ${escapeHtml(domainLabel(businessDomain(asset)))} · ${escapeHtml(asset.purpose || 'Purpose not recorded. Confirm the process and product owner before making configuration changes.')}.</p>
+    body = `<p><strong>Business context:</strong> ${businessDomain(asset) === 'ot' ? 'Operations' : 'Business systems'} · ${escapeHtml(asset.purpose || 'Purpose not recorded. Confirm the process and owner before making changes.')}.</p>
       <p><strong>Why this finding appears:</strong> ${escapeHtml(rule.why(asset))}</p>
-      <p><strong>Confidentiality / integrity / availability:</strong> ${['confidentiality', 'integrity', 'availability'].map(dimension => `${dimension[0].toUpperCase()}: ${ciaRating(asset, dimension)}`).join(' · ')}.</p>
       <p><strong>Possible business scenario:</strong> ${escapeHtml(impactScenario(asset, rule))}</p>
-      <p><strong>Recommended implementation sequence:</strong></p>
+      <p><strong>Simple steps:</strong></p>
       ${implementationSteps(rule.key, asset)}
       ${guideIllustration(rule.key, asset.name)}
-      <p><strong>Framework reference:</strong> ${codes.map(escapeHtml).join('; ')}. These are outcome references, not a claim that following one step makes the business compliant.</p>
       <p class="educational-callout">${businessDomain(asset) === 'ot' || businessDomain(asset) === 'shared'
-        ? 'For operational technology or shared IT/OT, coordinate with the process owner and qualified OT staff. Test changes offline or in a safe maintenance window, preserve manual fallback and recovery, and never interrupt a live process without an approved change plan. '
+        ? 'For equipment or systems that affect products, facilities, or people, work with the person responsible for the process. Test changes away from live operations when possible, keep a manual backup plan, and never interrupt active work without approval. '
         : 'Test changes safely, preserve a recovery route, and have the system owner verify effectiveness. '}
       Follow the vendor guide for your exact deployment and license. The diagram is illustrative, not a screenshot of your console.</p>`;
     references = [
       ...(implementationResources[rule.key] || []),
-      ...( /microsoft|entra|active directory|\bad\b/i.test(`${asset.name} ${asset.type}`) ? [microsoftVideoResource] : []),
-      { label: 'NIST Cybersecurity Framework 2.0 (official)', url: 'https://www.nist.gov/cyberframework', type: 'framework' }
+      ...( /microsoft|entra|active directory|\bad\b/i.test(`${asset.name} ${asset.type}`) ? [microsoftVideoResource] : [])
     ];
     references = [...new Map(references.map(source => [source.url, source])).values()];
   } else if (kind === 'finance') {
@@ -1133,10 +1169,7 @@ function openInfoDialog(kind, ruleKey, assetId) {
       <p><strong>Net product loss:</strong> gross product loss reported in physical issues minus salvage/recovered value, with a floor of zero. Gross loss should represent the written-off quantity/value; salvage should only include value actually recovered or reworked.</p>
       <p><strong>Estimated disruption impact:</strong> net product loss plus entered disposal/rework, delay/replacement, recovery, and other direct costs. Enter a cost once and link the issue to its shipment/batch to avoid duplicate totals.</p>
       <p class="educational-callout">Values are user-entered estimates in CAD. They are not accounting entries, insurance valuations, regulatory loss determinations, or proof of cyber causation. Reconcile with finance/quality records before business decisions.</p>`;
-    references = [
-      { label: 'NIST SP 800-34: Contingency Planning Guide', url: 'https://csrc.nist.gov/pubs/sp/800/34/r1/upd1/final' },
-      { label: 'NIST SP 800-161: Cybersecurity Supply Chain Risk Management', url: 'https://csrc.nist.gov/pubs/sp/800/161/r1/upd1/final' }
-    ];
+    references = [];
   } else {
     eyebrow.textContent = kind === 'centralized' ? 'FUTURE CENTRAL OPERATIONS' : 'TRANSPORT OPERATIONS';
     title.textContent = kind === 'centralized' ? 'What a centralized system needs' : 'How to use dispatch and disruption records';
@@ -1281,6 +1314,22 @@ bind('#diagram', 'click', event => {
   if (item.dataset.mapKind === 'node') openNodeDialog(item.dataset.mapId);
   if (item.dataset.mapKind === 'vendor') openVendorDialog(item.dataset.mapId);
   if (item.dataset.mapKind === 'asset') openDialog(item.dataset.mapId);
+});
+bind('#diagram', 'pointerover', event => {
+  const item = event.target.closest('[data-map-id]');
+  if (item) highlightMapConnections(item.dataset.mapId);
+});
+bind('#diagram', 'pointerout', event => {
+  if (event.relatedTarget instanceof Element && event.relatedTarget.closest('[data-map-id]')) return;
+  clearMapConnectionHighlight();
+});
+bind('#diagram', 'focusin', event => {
+  const item = event.target.closest('[data-map-id]');
+  if (item) highlightMapConnections(item.dataset.mapId);
+});
+bind('#diagram', 'focusout', event => {
+  if (event.relatedTarget instanceof Element && event.relatedTarget.closest('[data-map-id]')) return;
+  clearMapConnectionHighlight();
 });
 bind('#diagram', 'keydown', event => {
   if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -1475,7 +1524,7 @@ document.querySelectorAll('.filter-tab').forEach(button => button.addEventListen
   document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.toggle('active', tab === button));
   document.querySelectorAll('.filter-tab').forEach(tab => tab.setAttribute('aria-pressed', String(tab === button)));
   renderFindings(assess());
-  showToast(`${button.textContent.trim()} findings selected.`);
+  showToast(`${button.textContent.trim().replace(/\s+\d+$/, '')} selected.`);
 }));
 bind('#asset-map-tab', 'click', () => {
   activeMap = 'assets';
