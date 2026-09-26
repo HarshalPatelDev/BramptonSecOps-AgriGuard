@@ -2,6 +2,7 @@
 .auth-topbar { max-width: none; }
 .auth-back-link { color: #55725e; font-size: 11px; font-weight: 700; text-decoration: none; }
 .auth-back-link:hover { text-decoration: underline; }
+.auth-page :focus-visible { outline: 3px solid #1d6f45; outline-offset: 3px; }
 .auth-main { width: min(1040px, calc(100% - 40px)); min-height: calc(100vh - 70px); margin: 0 auto; padding: 54px 0; display: grid; grid-template-columns: minmax(340px, 450px) minmax(300px, 1fr); align-items: center; gap: clamp(42px, 8vw, 100px); }
 .auth-card { padding: 34px; background: #fff; border: 1px solid #e3eae4; border-radius: 12px; box-shadow: 0 18px 55px rgba(28, 63, 43, .07); }
 .auth-intro .eyebrow { margin-bottom: 10px; }

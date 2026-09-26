@@ -4,6 +4,7 @@ const INCIDENT_STORAGE_KEY = 'agriguard-incidents-v1';
 const NODE_STORAGE_KEY = 'agriguard-network-nodes-v1';
 const VENDOR_STORAGE_KEY = 'agriguard-vendors-v1';
 const NETWORK_ZONES = ['Cloud / SaaS', 'Perimeter / DMZ', 'Internal network', 'Restricted data zone', 'Remote / user devices', 'Not sure'];
+const CIA_LEVELS = { none: 0, low: 1, medium: 2, high: 3 };
 const PROCESS_STAGES = [
   ['supplier_pickup', 'Supplier pickup'], ['inbound', 'Inbound transport'],
   ['receiving', 'Receiving / quality check'], ['cold_storage', 'Cold storage'],
@@ -111,45 +112,49 @@ const microsoftVideoResource = {
 
 const demoAssets = [
   {
-    id: 'm365', name: 'Microsoft 365', type: 'Identity & access', criticality: 'high',
-    purpose: 'Business email, shared files, and staff identity.', owner: 'Operations',
+    id: 'm365', name: 'Microsoft 365', type: 'Identity & access', criticality: 'high', domain: 'shared',
+    confidentiality: 'high', integrity: 'high', availability: 'high',
+    purpose: 'Business email, shared files, and staff identity.', businessImpact: 'Staff may lose access to purchase orders, supplier contacts, and delivery coordination.', owner: 'Operations',
     exposure: 'yes', admin: 'unknown', mfa: 'partial', access: 'unknown',
     backups: 'unknown', logging: 'partial', zone: 'Cloud / SaaS', dependencies: []
   },
   {
-    id: 'farm-erp', name: 'Farm operations platform', type: 'Business application', criticality: 'high',
-    purpose: 'Coordinates inventory, purchasing, and daily operations.', owner: 'Farm manager',
+    id: 'farm-erp', name: 'Farm operations platform', type: 'Business application', criticality: 'high', domain: 'shared',
+    confidentiality: 'medium', integrity: 'high', availability: 'high',
+    purpose: 'Coordinates inventory, purchasing, and daily operations.', businessImpact: 'Incorrect or unavailable lot and inventory records can delay receiving, production scheduling, and customer orders.', owner: 'Farm manager',
     exposure: 'yes', admin: 'changed', mfa: 'unknown', access: 'no',
     backups: 'partial', logging: 'unknown', zone: 'Cloud / SaaS', dependencies: ['m365']
   },
   {
-    id: 'nas', name: 'Office file server', type: 'Data storage', criticality: 'high',
-    purpose: 'Stores finance records and internal business documents.', owner: 'Office team',
+    id: 'nas', name: 'Office file server', type: 'Data storage', criticality: 'high', domain: 'it',
+    confidentiality: 'high', integrity: 'high', availability: 'medium',
+    purpose: 'Stores finance records and internal business documents.', businessImpact: 'Loss or alteration could prevent finance reconciliation and access to essential business records.', owner: 'Office team',
     exposure: 'no', admin: 'shared', mfa: 'no', access: 'no',
     backups: 'no', logging: 'no', zone: 'Restricted data zone', dependencies: []
   },
   {
-    id: 'router', name: 'Office router & Wi-Fi', type: 'Network / infrastructure', criticality: 'medium',
-    purpose: 'Connects office devices and staff to the internet.', owner: 'IT support',
+    id: 'router', name: 'Office router & Wi-Fi', type: 'Network / infrastructure', criticality: 'medium', domain: 'shared',
+    confidentiality: 'low', integrity: 'high', availability: 'high',
+    purpose: 'Connects office devices and staff to the internet.', businessImpact: 'An outage can disconnect office staff from cloud ordering, dispatch, and communications tools.', owner: 'IT support',
     exposure: 'unknown', admin: 'unknown', mfa: 'unknown', access: 'unknown',
     backups: 'unknown', logging: 'unknown', zone: 'Perimeter / DMZ', dependencies: []
   }
 ];
 
 const demoNodes = [
-  { id: 'node-fw', name: 'Edge firewall', zone: 'Perimeter / DMZ', purpose: 'Filters inbound/outbound office network traffic.', dependencies: ['router'] },
-  { id: 'node-dispatch', name: 'Dispatch workstation', zone: 'Internal network', purpose: 'Dispatcher assigns trucks and confirms load status.', dependencies: ['farm-erp', 'm365'] },
-  { id: 'node-telematics', name: 'Fleet telematics gateway', zone: 'Perimeter / DMZ', purpose: 'Receives vehicle location and diagnostic updates.', dependencies: ['router'] },
-  { id: 'node-backup', name: 'Recovery admin console', zone: 'Restricted data zone', purpose: 'Restricted access point for restoration and recovery tasks.', dependencies: ['nas'] },
-  { id: 'node-yard-tablet', name: 'Yard check-in tablet', zone: 'Remote / user devices', purpose: 'Records trailer, driver, and arrival checks at the yard.', dependencies: ['node-dispatch', 'm365'] },
-  { id: 'node-warehouse-terminal', name: 'Warehouse receiving terminal', zone: 'Internal network', purpose: 'Confirms received quantities and flags damaged cargo.', dependencies: ['farm-erp', 'vendor-carrier'] },
-  { id: 'node-wifi-ap', name: 'Operations Wi-Fi access point', zone: 'Internal network', purpose: 'Provides staff connectivity for dispatch and receiving workflows.', dependencies: ['router', 'node-fw'] }
+  { id: 'node-fw', name: 'Edge firewall', zone: 'Perimeter / DMZ', domain: 'it', purpose: 'Filters inbound/outbound office network traffic.', businessImpact: 'A misconfiguration or outage can expose services or disconnect staff from essential cloud tools.', dependencies: ['router'] },
+  { id: 'node-dispatch', name: 'Dispatch workstation', zone: 'Internal network', domain: 'ot', purpose: 'Dispatcher assigns trucks and confirms load status.', businessImpact: 'Lost dispatch access can delay refrigerated pickups and grocery delivery windows.', dependencies: ['farm-erp', 'm365'] },
+  { id: 'node-telematics', name: 'Fleet telematics gateway', zone: 'Perimeter / DMZ', domain: 'ot', purpose: 'Receives vehicle location and diagnostic updates.', businessImpact: 'Missing location or reefer status can delay response to a route or temperature incident.', dependencies: ['router'] },
+  { id: 'node-backup', name: 'Recovery admin console', zone: 'Restricted data zone', domain: 'it', purpose: 'Restricted access point for restoration and recovery tasks.', businessImpact: 'If recovery access is unavailable, restore time for orders and operating records can increase.', dependencies: ['nas'] },
+  { id: 'node-yard-tablet', name: 'Yard check-in tablet', zone: 'Remote / user devices', domain: 'ot', purpose: 'Records trailer, driver, and arrival checks at the yard.', businessImpact: 'Incorrect check-in details can misroute a truck or delay the receiving dock.', dependencies: ['node-dispatch', 'm365'] },
+  { id: 'node-warehouse-terminal', name: 'Warehouse receiving terminal', zone: 'Internal network', domain: 'ot', purpose: 'Confirms received quantities and flags damaged cargo.', businessImpact: 'Wrong quantity or condition records can lead to incorrect lot release, spoilage, or production delays.', dependencies: ['farm-erp', 'vendor-carrier'] },
+  { id: 'node-wifi-ap', name: 'Operations Wi-Fi access point', zone: 'Internal network', domain: 'shared', purpose: 'Provides staff connectivity for dispatch and receiving workflows.', businessImpact: 'Loss of connectivity can slow yard checks, inventory updates, and dispatch communications.', dependencies: ['router', 'node-fw'] }
 ];
 
 const demoVendors = [
-  { id: 'vendor-carrier', name: 'Regional Freight Partner', service: 'Overflow freight and refrigerated truck capacity', zone: 'Cloud / SaaS', access: 'Receives load details and delivery windows; no internal network access.', data: 'Shipment reference, cargo class, pickup/delivery addresses, ETA', dependencies: ['node-dispatch'], criticality: 'high', contact: 'Dispatch coordinator' },
-  { id: 'vendor-telematics', name: 'Fleet Telematics Provider', service: 'Vehicle location and diagnostic portal', zone: 'Perimeter / DMZ', access: 'Provider portal uses named fleet-manager accounts; integration method needs verification.', data: 'Vehicle identifiers, location, diagnostics', dependencies: ['node-telematics'], criticality: 'high', contact: 'Fleet manager' },
-  { id: 'vendor-it', name: 'Managed IT Support', service: 'Endpoint and network administration', zone: 'Remote / user devices', access: 'Remote support access; review named accounts, MFA, and approval process.', data: 'Device/network configuration and support logs', dependencies: ['node-backup', 'router'], criticality: 'medium', contact: 'Operations lead' }
+  { id: 'vendor-carrier', name: 'Regional Freight Partner', service: 'Overflow freight and refrigerated truck capacity', zone: 'Cloud / SaaS', domain: 'ot', logoUrl: '', businessImpact: 'If capacity is unavailable, perishable pickups may miss receiving slots and product may remain in transit longer.', access: 'Receives load details and delivery windows; no internal network access.', data: 'Shipment reference, cargo class, pickup/delivery addresses, ETA', dependencies: ['node-dispatch'], criticality: 'high', contact: 'Dispatch coordinator' },
+  { id: 'vendor-telematics', name: 'Fleet Telematics Provider', service: 'Vehicle location and diagnostic portal', zone: 'Perimeter / DMZ', domain: 'shared', logoUrl: '', businessImpact: 'A provider outage can reduce visibility into vehicle location and temperature alerts during transit.', access: 'Provider portal uses named fleet-manager accounts; integration method needs verification.', data: 'Vehicle identifiers, location, diagnostics', dependencies: ['node-telematics'], criticality: 'high', contact: 'Fleet manager' },
+  { id: 'vendor-it', name: 'Managed IT Support', service: 'Endpoint and network administration', zone: 'Remote / user devices', domain: 'it', logoUrl: '', businessImpact: 'Delayed support can extend an email, network, or recovery outage that interrupts purchasing and dispatch coordination.', access: 'Remote support access; review named accounts, MFA, and approval process.', data: 'Device/network configuration and support logs', dependencies: ['node-backup', 'router'], criticality: 'medium', contact: 'Operations lead' }
 ];
 
 const typeIcons = {
@@ -259,8 +264,17 @@ let incidents = readCollection(INCIDENT_STORAGE_KEY, demoIncidents, item => type
 let networkNodes = readCollection(NODE_STORAGE_KEY, demoNodes, item => typeof item.name === 'string' && typeof item.zone === 'string' && Array.isArray(item.dependencies));
 let vendors = readCollection(VENDOR_STORAGE_KEY, demoVendors, item => typeof item.name === 'string' && typeof item.service === 'string' && Array.isArray(item.dependencies));
 let activeFilter = 'all';
-let activeMap = 'assets';
+let activeMap = 'topology';
+let activeDomain = 'all';
+let activePage = 'home';
 let toastTimer;
+let activeDialogTrigger = null;
+
+function showAccessibleDialog(dialog, initialFocus) {
+  activeDialogTrigger = document.activeElement;
+  dialog.showModal();
+  if (initialFocus) initialFocus.focus();
+}
 
 function readAssets() {
   try {
@@ -325,14 +339,84 @@ function escapeHtml(value) {
   })[char]);
 }
 
+function monogram(name) {
+  const words = String(name || 'Business').trim().split(/\s+/).filter(Boolean);
+  return escapeHtml((words.length > 1 ? `${words[0][0]}${words[1][0]}` : words[0].slice(0, 2)).toUpperCase());
+}
+
+function logoColour(name) {
+  let hash = 0;
+  for (const char of String(name || 'business')) hash = (hash * 31 + char.charCodeAt(0)) % 360;
+  return `hsl(${hash} 24% 92%)`;
+}
+
+function logoMark(name, className = 'brand-mark-small', logoUrl = '') {
+  const image = /^https:\/\/[^\s"'<>]+$/i.test(String(logoUrl || ''));
+  return `<span class="entity-logo ${className}" style="--logo-background:${logoColour(name)}" aria-hidden="true">${image ? `<img src="${escapeHtml(logoUrl)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}<span ${image ? 'hidden' : ''}>${monogram(name)}</span></span>`;
+}
+
+function businessDomain(item) {
+  if (['it', 'ot', 'shared'].includes(item.domain)) return item.domain;
+  if (item.kind === 'vendor') return 'shared';
+  const category = `${item.type || ''} ${item.name || ''} ${item.purpose || ''}`.toLowerCase();
+  return /fleet|telematic|warehouse|cold.room|refrigerat|production|processing|packaging|plc|scada|sensor|dispatch|vehicle|factory|manufactur/.test(category)
+    ? 'ot'
+    : /identity|email|network|router|firewall|cloud/.test(category) ? 'shared' : 'it';
+}
+
+function ciaRating(item, dimension) {
+  if (['none', 'low', 'medium', 'high'].includes(item[dimension])) return item[dimension];
+  const domain = businessDomain(item);
+  if (dimension === 'confidentiality') return domain === 'ot' ? 'low' : item.criticality === 'high' ? 'medium' : 'low';
+  if (dimension === 'integrity') return item.criticality === 'low' ? 'medium' : 'high';
+  return item.criticality === 'low' ? 'low' : 'high';
+}
+
+function ciaScore(item) {
+  const values = ['confidentiality', 'integrity', 'availability'].map(dimension => CIA_LEVELS[ciaRating(item, dimension)]);
+  return Math.max(...values) * 2 + Math.round(values.reduce((sum, value) => sum + value, 0) / 3);
+}
+
+function riskPriority(score) {
+  return score >= 90 ? 'critical'
+    : score >= 75 ? 'high'
+      : score >= 52 ? 'medium'
+        : score >= 35 ? 'low' : 'informational';
+}
+
+function impactScenario(asset, rule) {
+  const domain = businessDomain(asset);
+  const c = ciaRating(asset, 'confidentiality');
+  const i = ciaRating(asset, 'integrity');
+  const a = ciaRating(asset, 'availability');
+  const scenarios = [];
+  if (a === 'high' || a === 'medium') {
+    scenarios.push(domain === 'ot'
+      ? `If ${asset.name} becomes unavailable, staff may lose visibility or control of receiving, cold storage, processing, or dispatch; product can be held, spoiled, or delayed.`
+      : `If ${asset.name} becomes unavailable, staff may lose access to the records or services needed to coordinate operations and recover on time.`);
+  }
+  if (i === 'high' || i === 'medium') {
+    scenarios.push(domain === 'ot'
+      ? `If operating or lot data in ${asset.name} is changed, incorrect quantities, process settings, or release decisions could affect product quality and traceability.`
+      : `If records in ${asset.name} are changed, orders, access decisions, or recovery information could be inaccurate and disrupt downstream work.`);
+  }
+  if (c === 'high' || c === 'medium') {
+    scenarios.push(`If information in ${asset.name} is exposed, business, employee, customer, or supplier details could be misused.`);
+  }
+  if (String(asset.businessImpact || '').trim()) {
+    scenarios.push(`For this operation, the recorded consequence is: ${asset.businessImpact}`);
+  }
+  return scenarios.length ? scenarios.join(' ') : `${rule.why(asset)} The current record indicates limited CIA impact; verify this with the process owner.`;
+}
+
 function assess() {
   return assets.flatMap(asset => ruleDefinitions
     .filter(rule => rule.applies(asset))
     .map(rule => {
       const criticality = asset.criticality === 'high' ? 16 : asset.criticality === 'medium' ? 8 : 0;
       const exposure = asset.exposure === 'yes' ? 9 : asset.exposure === 'unknown' ? 4 : 0;
-      const score = Math.min(100, rule.base + rule.gap(asset) + criticality + exposure);
-      const priority = score >= 75 ? 'high' : score >= 52 ? 'medium' : 'low';
+      const score = Math.min(100, rule.base + rule.gap(asset) + criticality + exposure + ciaScore(asset));
+      const priority = riskPriority(score);
       return { asset, rule, score, priority };
     }))
     .sort((a, b) => b.score - a.score || a.asset.name.localeCompare(b.asset.name));
@@ -351,12 +435,13 @@ function render() {
 
 function renderSummary(findings) {
   const high = findings.filter(item => item.priority === 'high').length;
+  const critical = findings.filter(item => item.priority === 'critical').length;
   const medium = findings.filter(item => item.priority === 'medium').length;
   const topScore = findings.length ? findings[0].score : 0;
   const average = findings.length ? Math.round(findings.reduce((sum, item) => sum + item.score, 0) / findings.length) : 0;
   document.querySelector('#summary').innerHTML = `
     <article class="summary-card"><div class="summary-label">Systems inventoried</div><div class="summary-value">${assets.length}</div><div class="summary-hint">Across your business</div></article>
-    <article class="summary-card"><div class="summary-label">High priority gaps</div><div class="summary-value ${high ? 'priority-high' : ''}">${high}</div><div class="summary-hint">Address these first</div></article>
+    <article class="summary-card"><div class="summary-label">Critical / high risks</div><div class="summary-value ${critical || high ? 'priority-high' : ''}">${critical + high}</div><div class="summary-hint">${critical} critical · ${high} high</div></article>
     <article class="summary-card"><div class="summary-label">Other gaps to review</div><div class="summary-value ${medium ? 'priority-med' : ''}">${medium + findings.filter(item => item.priority === 'low').length}</div><div class="summary-hint">${medium} medium · ${findings.filter(item => item.priority === 'low').length} lower priority</div></article>
     <article class="summary-card"><div class="summary-label">Highest risk score</div><div class="summary-value">${topScore}<span style="font-size:12px;color:#98a49d;font-weight:600"> / 100</span></div><div class="summary-hint">Average finding score: ${average}</div></article>`;
 }
@@ -371,13 +456,15 @@ function renderAssets() {
     const deps = asset.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
     return `<article class="asset-card">
       <div class="asset-card-top">
-        <div class="asset-icon" aria-hidden="true">${escapeHtml(typeIcons[asset.type] || '◇')}</div>
+        ${logoMark(asset.name, 'asset-logo', asset.logoUrl)}
         <div class="asset-heading"><h3 class="asset-name">${escapeHtml(asset.name)}</h3><span class="asset-type">${escapeHtml(asset.type)}</span></div>
         <button class="asset-menu" type="button" data-action="edit" data-id="${escapeHtml(asset.id)}" aria-label="Edit ${escapeHtml(asset.name)}">✎</button>
       </div>
       <p class="asset-purpose">${escapeHtml(asset.purpose || 'Purpose not provided.')}</p>
+      ${asset.businessImpact ? `<p class="asset-impact"><strong>Business impact:</strong> ${escapeHtml(asset.businessImpact)}</p>` : ''}
       <div class="asset-footer">
         <span class="tag ${asset.criticality === 'high' ? 'critical' : ''}">${escapeHtml(capitalize(asset.criticality))} impact</span>
+        <span class="tag domain-tag">${escapeHtml(domainLabel(businessDomain(asset)))}</span>
         <span class="tag">${escapeHtml(asset.zone)}</span>
         ${asset.exposure === 'yes' ? '<span class="tag high-exposure">Internet-facing</span>' : ''}
         ${deps.length ? `<span class="dependency-note">Depends on ${deps.map(dep => escapeHtml(dep.name)).join(', ')}</span>` : ''}
@@ -395,6 +482,17 @@ function topologyItems() {
   ];
 }
 
+function domainLabel(domain) {
+  return domain === 'ot' ? 'OT' : domain === 'shared' ? 'Shared IT/OT' : 'IT';
+}
+
+function attachLogoFallbacks(container) {
+  container.querySelectorAll('.entity-logo img').forEach(image => image.addEventListener('error', () => {
+    image.hidden = true;
+    image.nextElementSibling.hidden = false;
+  }, { once: true }));
+}
+
 function renderVendors() {
   const list = document.querySelector('#vendor-list');
   if (!vendors.length) {
@@ -404,9 +502,11 @@ function renderVendors() {
   list.innerHTML = vendors.map(vendor => {
     const links = vendor.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
     return `<article class="vendor-card">
-      <div class="vendor-card-heading"><div><span class="vendor-type-label">THIRD-PARTY PROVIDER</span><h3>${escapeHtml(vendor.name)}</h3></div><div class="vendor-actions"><button class="asset-menu" type="button" data-edit-vendor="${escapeHtml(vendor.id)}" aria-label="Edit ${escapeHtml(vendor.name)}">✎</button><button class="vendor-delete" type="button" data-remove-vendor="${escapeHtml(vendor.id)}">Remove</button></div></div>
+      <div class="vendor-card-heading"><div class="vendor-identity">${logoMark(vendor.name, 'vendor-logo', vendor.logoUrl)}<div><span class="vendor-type-label">THIRD-PARTY PROVIDER</span><h3>${escapeHtml(vendor.name)}</h3></div></div><div class="vendor-actions"><button class="asset-menu" type="button" data-edit-vendor="${escapeHtml(vendor.id)}" aria-label="Edit ${escapeHtml(vendor.name)}">✎</button><button class="vendor-delete" type="button" data-remove-vendor="${escapeHtml(vendor.id)}">Remove</button></div></div>
       <p class="vendor-service">${escapeHtml(vendor.service)}</p>
+      <span class="tag domain-tag">${escapeHtml(domainLabel(businessDomain(vendor)))}</span>
       <div class="vendor-details"><span><b>Connection zone</b>${escapeHtml(vendor.zone)}</span><span><b>Business criticality</b>${escapeHtml(capitalize(vendor.criticality || 'medium'))}</span><span><b>Internal contact</b>${escapeHtml(vendor.contact || 'Not assigned')}</span></div>
+      ${vendor.businessImpact ? `<p class="vendor-fact"><strong>Business consequence:</strong> ${escapeHtml(vendor.businessImpact)}</p>` : ''}
       <p class="vendor-fact"><strong>Access:</strong> ${escapeHtml(vendor.access || 'Not recorded')}</p>
       <p class="vendor-fact"><strong>Data:</strong> ${escapeHtml(vendor.data || 'Not recorded')}</p>
       <p class="vendor-fact"><strong>Connected to:</strong> ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'No linked systems or nodes'}</p>
@@ -422,25 +522,34 @@ function renderNodes() {
   }
   list.innerHTML = networkNodes.map(node => {
     const links = node.dependencies.map(id => topologyItems().find(item => item.id === id)).filter(Boolean);
-    return `<article class="node-card"><div class="node-card-icon" aria-hidden="true">◈</div><div class="node-card-body"><h4>${escapeHtml(node.name)}</h4><span>${escapeHtml(node.zone)}</span><p>${escapeHtml(node.purpose)}</p><small>Connected to: ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'None recorded'}</small></div><button class="asset-menu" type="button" data-edit-node="${escapeHtml(node.id)}" aria-label="Edit ${escapeHtml(node.name)}">✎</button><button class="vendor-delete" type="button" data-remove-node="${escapeHtml(node.id)}">Remove</button></article>`;
+    return `<article class="node-card">${logoMark(node.name, 'node-logo')}<div class="node-card-body"><h4>${escapeHtml(node.name)}</h4><span>${escapeHtml(node.zone)} · ${escapeHtml(domainLabel(businessDomain(node)))}</span><p>${escapeHtml(node.purpose)}</p>${node.businessImpact ? `<p class="entity-impact"><strong>Consequence:</strong> ${escapeHtml(node.businessImpact)}</p>` : ''}<small>Connected to: ${links.length ? links.map(item => escapeHtml(item.name)).join(', ') : 'None recorded'}</small></div><button class="asset-menu" type="button" data-edit-node="${escapeHtml(node.id)}" aria-label="Edit ${escapeHtml(node.name)}">✎</button><button class="vendor-delete" type="button" data-remove-node="${escapeHtml(node.id)}">Remove</button></article>`;
   }).join('');
 }
 
 function renderFindings(findings) {
   const counts = {
     all: findings.length,
+    critical: findings.filter(item => item.priority === 'critical').length,
     high: findings.filter(item => item.priority === 'high').length,
     medium: findings.filter(item => item.priority === 'medium').length,
-    low: findings.filter(item => item.priority === 'low').length
+    low: findings.filter(item => item.priority === 'low').length,
+    informational: findings.filter(item => item.priority === 'informational').length,
+    na: 0
   };
   document.querySelector('#count-all').textContent = counts.all;
+  document.querySelector('#count-critical').textContent = counts.critical;
   document.querySelector('#count-high').textContent = counts.high;
   document.querySelector('#count-medium').textContent = counts.medium;
   document.querySelector('#count-low').textContent = counts.low;
+  document.querySelector('#count-informational').textContent = counts.informational;
+  document.querySelector('#count-na').textContent = counts.na;
   const visible = findings.filter(item => activeFilter === 'all' || item.priority === activeFilter);
   const container = document.querySelector('#finding-list');
   if (!visible.length) {
-    container.innerHTML = `<div class="no-findings">${findings.length ? 'No findings in this priority group.' : 'No gaps identified from the answers provided. Confirm settings in each product before treating a control as verified.'}</div>`;
+    const emptyMessage = activeFilter === 'na'
+      ? 'Not applicable findings are not scored by this prototype. Marking a control N/A requires an owner-reviewed applicability decision.'
+      : findings.length ? 'No findings in this priority group.' : 'No gaps identified from the answers provided. Confirm settings in each product before treating a control as verified.';
+    container.innerHTML = `<div class="no-findings">${emptyMessage}</div>`;
     return;
   }
   container.innerHTML = visible.map(({ asset, rule, score, priority }) => `
@@ -448,13 +557,18 @@ function renderFindings(findings) {
       <div class="finding-rail"></div>
       <div class="finding-content">
         <div class="finding-top">
-          <span class="severity-pill">${priority === 'high' ? 'High' : priority === 'medium' ? 'Medium' : 'Low'}</span>
-          <div class="finding-title-wrap"><h3 class="finding-title">${escapeHtml(rule.title)}</h3><div class="finding-asset">${escapeHtml(asset.name)} · ${escapeHtml(asset.owner || 'Owner not assigned')}</div></div>
+          <span class="severity-pill">${priority === 'critical' ? 'Critical' : priority === 'high' ? 'High' : priority === 'medium' ? 'Moderate' : priority === 'low' ? 'Low' : 'Informational'}</span>
+          <div class="finding-title-wrap"><h3 class="finding-title">${escapeHtml(rule.title)}</h3><div class="finding-asset">${escapeHtml(asset.name)} · ${escapeHtml(asset.owner || 'Owner not assigned')} · ${escapeHtml(domainLabel(businessDomain(asset)))}</div></div>
           <div class="score-block"><span class="score-value">${score}</span><span class="score-caption">Risk score</span></div>
         </div>
         <div class="finding-details">
-          <div><span class="detail-label">Why it matters</span><p class="detail-copy">${escapeHtml(rule.why(asset))}</p></div>
+          <div><span class="detail-label">Potential business impact scenario</span><p class="detail-copy">${escapeHtml(impactScenario(asset, rule))}</p></div>
           <div><span class="detail-label">Recommended next steps</span><p class="detail-copy recommendation">${escapeHtml(rule.action)}</p><button class="guide-button" type="button" data-info="finding" data-rule="${escapeHtml(rule.key)}" data-asset-id="${escapeHtml(asset.id)}">Open step-by-step guide, images &amp; sources ↗</button></div>
+        </div>
+        <div class="cia-impact" aria-label="Confidentiality, integrity, and availability impact">
+          <span><abbr title="Confidentiality">C</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'confidentiality')))}</span>
+          <span><abbr title="Integrity">I</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'integrity')))}</span>
+          <span><abbr title="Availability">A</abbr> ${escapeHtml(capitalize(ciaRating(asset, 'availability')))}</span>
         </div>
         <div class="finding-meta"><span>NIST CSF 2.0 outcomes</span>${rule.controls.map(control => `<span class="csf-label" title="${escapeHtml(csfDescriptions[control])}">${control}</span>`).join('')}<span>${rule.controls.map(control => escapeHtml(csfDescriptions[control])).join(' · ')}</span></div>
       </div>
@@ -596,7 +710,7 @@ function renderDispatches() {
     const statusClass = ['delayed', 'canceled'].includes(task.status) ? 'issue' : task.status === 'delivered' ? 'resolved' : '';
     const delay = taskDelayMinutes(task);
     return `<article class="dispatch-card">
-      <div class="dispatch-top"><div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
+      <div class="dispatch-top"><div class="dispatch-identity">${logoMark(task.customer || task.name, 'dispatch-logo', task.logoUrl)}<div><span class="status-pill ${statusClass}">${escapeHtml(humanStatus(task.status))}</span><h4>${escapeHtml(task.name)}</h4><span class="task-customer">${escapeHtml(task.customer || 'Customer/process not specified')}</span></div></div><button class="asset-menu" type="button" data-edit-dispatch="${escapeHtml(task.id)}" aria-label="Edit ${escapeHtml(task.name)}">✎</button></div>
       <p class="cargo-line"><strong>Ingredient / product:</strong> ${escapeHtml(task.cargo)}</p>
       <div class="dispatch-stage-line"><span>${escapeHtml(stageName(task.stage))}</span>${task.productValue ? `<strong>${escapeHtml(money(task.productValue))} tracked value</strong>` : '<strong>Value not entered</strong>'}</div>
       <div class="route-line"><span>${escapeHtml(task.origin)}</span><span class="route-arrow" aria-hidden="true">→</span><span>${escapeHtml(task.destination)}</span></div>
@@ -607,6 +721,7 @@ function renderDispatches() {
       <div class="dispatch-actions"><a class="learn-link map-link" href="${escapeHtml(mapsDirectionsUrl(task))}" target="_blank" rel="noopener noreferrer">Open route in Google Maps ↗</a><button class="learn-link" type="button" data-info="dispatch">How to use this record? Sources ↗</button></div>
     </article>`;
   }).join('');
+  attachLogoFallbacks(list);
 }
 
 function renderIncidents() {
@@ -633,9 +748,19 @@ function renderIncidents() {
 function renderDiagram() {
   const host = document.querySelector('#diagram');
   const footnote = document.querySelector('#map-footnote');
-  const items = activeMap === 'assets' ? topologyItems().filter(item => item.kind === 'asset') : topologyItems();
+  const allItems = activeMap === 'assets' ? topologyItems().filter(item => item.kind === 'asset') : topologyItems();
+  const items = allItems.filter(item => {
+    const domain = businessDomain(item);
+    if (activeDomain === 'it') return domain === 'it' || domain === 'shared';
+    if (activeDomain === 'ot') return domain === 'ot' || domain === 'shared';
+    if (activeDomain === 'shared') return domain === 'shared' || item.kind === 'vendor';
+    return true;
+  });
   if (!items.length) {
-    host.innerHTML = '<div class="diagram-empty">Add technologies to see your business map.</div>';
+    host.innerHTML = `<div class="diagram-empty">No ${escapeHtml(activeDomain === 'it' ? 'IT' : activeDomain === 'ot' ? 'operational technology' : 'matching')} systems are recorded in this view. Add or classify assets in the inventory.</div>`;
+    footnote.textContent = activeMap === 'assets'
+      ? 'Technology assets only. Arrows show dependencies you entered, not observed network traffic.'
+      : 'Select another business-domain view or classify more assets, nodes, and vendors.';
     return;
   }
   const zones = activeMap === 'assets' ? ['Inventory'] : NETWORK_ZONES;
@@ -722,9 +847,11 @@ function renderDiagram() {
     const title = item.name.length > 27 ? `${item.name.slice(0, 26)}…` : item.name;
     const detailText = item.kind === 'vendor' ? item.service || item.access || 'Third-party provider'
       : item.kind === 'node' ? item.purpose : item.type || item.purpose;
+    const impactText = item.businessImpact ? ` Business impact: ${item.businessImpact}` : '';
     const detail = detailText.length > 31 ? `${detailText.slice(0, 30)}…` : detailText;
     const kindLabel = item.kind === 'vendor' ? 'VENDOR' : item.kind === 'node' ? 'NODE' : 'ASSET';
-    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)} in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${escapeHtml(item.zone)})</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><circle cx="${x + 14}" cy="${y + 16}" r="4" fill="${dot}"/><text x="${x + 25}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 13}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${escapeHtml(detail)}</text></g>`;
+    const domain = domainLabel(businessDomain(item));
+    markup += `<g class="topology-item" data-map-kind="${item.kind}" data-map-id="${escapeHtml(item.id)}" tabindex="0" role="button" aria-label="${escapeHtml(item.name)}, ${domain}, in ${escapeHtml(item.zone)}"><title>${escapeHtml(item.name)} — ${escapeHtml(detailText)} (${domain}; ${escapeHtml(item.zone)}).${escapeHtml(impactText)}</title><rect x="${x}" y="${y}" width="${nodeWidth}" height="${nodeHeight}" rx="8" fill="${fill}" stroke="${stroke}"/><circle cx="${x + 14}" cy="${y + 16}" r="4" fill="${dot}"/><text x="${x + 25}" y="${y + 19}" fill="#315144" font-size="10" font-family="Segoe UI, sans-serif" font-weight="700">${escapeHtml(title)}</text><text x="${x + 13}" y="${y + 37}" fill="#829087" font-size="8" font-family="Segoe UI, sans-serif">${kindLabel} · ${domain} · ${escapeHtml(detail)}</text></g>`;
   });
   if (activeMap !== 'network' && items.every(item => !item.dependencies?.length)) {
     markup += `<text x="${width / 2}" y="${height - 12}" text-anchor="middle" fill="#94a098" font-size="9" font-family="Segoe UI, sans-serif">No dependencies recorded yet — add links when editing a node, technology, or vendor.</text>`;
@@ -761,15 +888,16 @@ function openDialog(assetId) {
   document.querySelector('.dialog-heading h2').textContent = asset ? 'Edit technology' : 'Add a technology';
   form.querySelector('[type="submit"]').textContent = asset ? 'Save changes' : 'Add to inventory';
   if (asset) {
-    for (const key of ['name', 'type', 'criticality', 'purpose', 'owner', 'exposure', 'admin', 'mfa', 'access', 'backups', 'logging', 'zone']) {
+    for (const key of ['name', 'type', 'criticality', 'purpose', 'businessImpact', 'owner', 'exposure', 'admin', 'mfa', 'access', 'backups', 'logging', 'zone', 'domain', 'confidentiality', 'integrity', 'availability', 'logoUrl']) {
       form.elements[key].value = asset[key] || '';
     }
+    form.elements.domain.value = businessDomain(asset);
+    for (const dimension of ['confidentiality', 'integrity', 'availability']) form.elements[dimension].value = ciaRating(asset, dimension);
     [...dependencies.options].forEach(option => {
       option.selected = asset.dependencies.includes(option.value);
     });
   }
-  document.querySelector('#asset-dialog').showModal();
-  form.elements.name.focus();
+  showAccessibleDialog(document.querySelector('#asset-dialog'), form.elements.name);
 }
 
 function fillZoneSelect(select) {
@@ -793,11 +921,12 @@ function openNodeDialog(nodeId) {
   if (node) {
     form.elements.name.value = node.name;
     form.elements.zone.value = node.zone;
+    form.elements.domain.value = businessDomain(node);
     form.elements.purpose.value = node.purpose;
+    form.elements.businessImpact.value = node.businessImpact || '';
     [...form.elements.dependencies.options].forEach(option => { option.selected = node.dependencies.includes(option.value); });
   }
-  document.querySelector('#node-dialog').showModal();
-  form.elements.name.focus();
+  showAccessibleDialog(document.querySelector('#node-dialog'), form.elements.name);
 }
 
 function openVendorDialog(vendorId) {
@@ -810,11 +939,11 @@ function openVendorDialog(vendorId) {
   fillZoneSelect(form.elements.zone);
   fillEntitySelect(form.elements.dependencies, vendorId);
   if (vendor) {
-    for (const key of ['name', 'zone', 'service', 'access', 'data', 'criticality', 'contact']) form.elements[key].value = vendor[key] || '';
+    for (const key of ['name', 'zone', 'service', 'businessImpact', 'access', 'data', 'criticality', 'contact', 'domain', 'logoUrl']) form.elements[key].value = vendor[key] || '';
+    form.elements.domain.value = businessDomain(vendor);
     [...form.elements.dependencies.options].forEach(option => { option.selected = vendor.dependencies.includes(option.value); });
   }
-  document.querySelector('#vendor-dialog').showModal();
-  form.elements.name.focus();
+  showAccessibleDialog(document.querySelector('#vendor-dialog'), form.elements.name);
 }
 
 function createId(prefix) {
@@ -829,15 +958,14 @@ function openDispatchDialog(dispatchId) {
   document.querySelector('#dispatch-dialog h2').textContent = task ? 'Update dispatch task' : 'New dispatch task';
   form.querySelector('[type="submit"]').textContent = task ? 'Update dispatch' : 'Save dispatch';
   if (task) {
-    for (const field of ['name', 'customer', 'cargo', 'origin', 'destination', 'stage', 'productValue', 'plannedEta', 'vehicle', 'status', 'actualEta', 'delayMinutes', 'reason', 'redundancy', 'remediation']) {
+    for (const field of ['name', 'customer', 'logoUrl', 'cargo', 'origin', 'destination', 'stage', 'productValue', 'plannedEta', 'vehicle', 'status', 'actualEta', 'delayMinutes', 'reason', 'redundancy', 'remediation']) {
       form.elements[field].value = task[field] || '';
     }
     if (!task.stage) form.elements.stage.value = 'inbound';
   } else {
     form.elements.plannedEta.value = demoTime(2);
   }
-  document.querySelector('#dispatch-dialog').showModal();
-  form.elements.name.focus();
+  showAccessibleDialog(document.querySelector('#dispatch-dialog'), form.elements.name);
 }
 
 function openIncidentDialog(incidentId) {
@@ -854,8 +982,7 @@ function openIncidentDialog(incidentId) {
     }
     if (!issue.otherCost && issue.estimatedCost) form.elements.otherCost.value = issue.estimatedCost;
   }
-  document.querySelector('#incident-dialog').showModal();
-  form.elements.description.focus();
+  showAccessibleDialog(document.querySelector('#incident-dialog'), form.elements.description);
 }
 
 function guideIllustration(ruleKey, assetName) {
@@ -915,13 +1042,18 @@ function openInfoDialog(kind, ruleKey, assetId) {
     const codes = rule.controls.map(code => `${code}: ${csfDescriptions[code] || 'Related cybersecurity outcome'}`);
     eyebrow.textContent = 'UNDERSTAND THE CONTROL';
     title.textContent = `${rule.title} · ${asset.name}`;
-    body = `<p><strong>Business context:</strong> ${escapeHtml(asset.purpose || 'Purpose not recorded. Confirm the process and product owner before making configuration changes.')}. If ${escapeHtml(asset.name)} is unavailable or misused, receiving, cold-storage visibility, processing schedules, lot traceability, or grocery delivery may be affected depending on how your operation uses it.</p>
+    body = `<p><strong>Business context:</strong> ${escapeHtml(domainLabel(businessDomain(asset)))} · ${escapeHtml(asset.purpose || 'Purpose not recorded. Confirm the process and product owner before making configuration changes.')}.</p>
       <p><strong>Why this finding appears:</strong> ${escapeHtml(rule.why(asset))}</p>
+      <p><strong>Confidentiality / integrity / availability:</strong> ${['confidentiality', 'integrity', 'availability'].map(dimension => `${dimension[0].toUpperCase()}: ${ciaRating(asset, dimension)}`).join(' · ')}.</p>
+      <p><strong>Possible business scenario:</strong> ${escapeHtml(impactScenario(asset, rule))}</p>
       <p><strong>Recommended implementation sequence:</strong></p>
       ${implementationSteps(rule.key, asset)}
       ${guideIllustration(rule.key, asset.name)}
       <p><strong>Framework reference:</strong> ${codes.map(escapeHtml).join('; ')}. These are outcome references, not a claim that following one step makes the business compliant.</p>
-      <p class="educational-callout">Follow the vendor guide for your exact deployment and license. Test changes safely, preserve a recovery route, and have the system owner verify effectiveness. The diagram is an illustrative image, not a screenshot of your console.</p>`;
+      <p class="educational-callout">${businessDomain(asset) === 'ot' || businessDomain(asset) === 'shared'
+        ? 'For operational technology or shared IT/OT, coordinate with the process owner and qualified OT staff. Test changes offline or in a safe maintenance window, preserve manual fallback and recovery, and never interrupt a live process without an approved change plan. '
+        : 'Test changes safely, preserve a recovery route, and have the system owner verify effectiveness. '}
+      Follow the vendor guide for your exact deployment and license. The diagram is illustrative, not a screenshot of your console.</p>`;
     references = [
       ...(implementationResources[rule.key] || []),
       ...( /microsoft|entra|active directory|\bad\b/i.test(`${asset.name} ${asset.type}`) ? [microsoftVideoResource] : []),
@@ -955,7 +1087,7 @@ function openInfoDialog(kind, ruleKey, assetId) {
   }
   content.innerHTML = body;
   sources.innerHTML = references.map(source => `<a class="source-resource source-${escapeHtml(source.type || 'guide')}" href="${escapeHtml(source.url)}" target="_blank" rel="noopener noreferrer"><span aria-hidden="true">${source.type === 'video' ? '▶' : source.type === 'training' ? '▣' : '↗'}</span> ${escapeHtml(source.label)}${source.type === 'video' ? ' · videos' : source.type === 'training' ? ' · guided training' : ''}</a>`).join('');
-  document.querySelector('#info-dialog').showModal();
+  showAccessibleDialog(document.querySelector('#info-dialog'), document.querySelector('#info-dialog .icon-button'));
 }
 
 document.querySelector('#add-asset-top').addEventListener('click', openDialog);
@@ -985,6 +1117,12 @@ document.querySelector('#asset-form').addEventListener('submit', event => {
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
   const data = new FormData(form);
+  const logoUrl = String(data.get('logoUrl') || '').trim();
+  if (logoUrl && !/^https:\/\/[^\s"'<>]+$/i.test(logoUrl)) {
+    showToast('Technology logo links must use HTTPS. Clear the field to use initials instead.');
+    form.elements.logoUrl.focus();
+    return;
+  }
   const selectedDependencies = [...document.querySelector('#dependencies').selectedOptions].map(option => option.value);
   const editingId = form.dataset.editingId;
   const asset = {
@@ -992,7 +1130,13 @@ document.querySelector('#asset-form').addEventListener('submit', event => {
     name: data.get('name').trim(),
     type: data.get('type'),
     criticality: data.get('criticality'),
+    domain: data.get('domain'),
+    confidentiality: data.get('confidentiality'),
+    integrity: data.get('integrity'),
+    availability: data.get('availability'),
+    logoUrl,
     purpose: data.get('purpose').trim(),
+    businessImpact: data.get('businessImpact').trim(),
     owner: data.get('owner').trim(),
     exposure: data.get('exposure'),
     admin: data.get('admin'),
@@ -1090,7 +1234,9 @@ document.querySelector('#node-form').addEventListener('submit', event => {
     id: editingId || createId('node'),
     name: String(data.get('name')).trim(),
     zone: data.get('zone'),
+    domain: data.get('domain'),
     purpose: String(data.get('purpose')).trim(),
+    businessImpact: String(data.get('businessImpact')).trim(),
     dependencies: data.getAll('dependencies')
   };
   if (editingId) networkNodes = networkNodes.map(item => item.id === editingId ? node : item);
@@ -1106,12 +1252,21 @@ document.querySelector('#vendor-form').addEventListener('submit', event => {
   const form = event.currentTarget;
   if (!form.reportValidity()) return;
   const data = new FormData(form);
+  const logoUrl = String(data.get('logoUrl') || '').trim();
+  if (logoUrl && !/^https:\/\/[^\s"'<>]+$/i.test(logoUrl)) {
+    showToast('Vendor logo links must use HTTPS. Clear the field to use initials instead.');
+    form.elements.logoUrl.focus();
+    return;
+  }
   const editingId = form.dataset.editingId;
   const vendor = {
     id: editingId || createId('vendor'),
     name: String(data.get('name')).trim(),
     service: String(data.get('service')).trim(),
     zone: data.get('zone'),
+    domain: data.get('domain'),
+    logoUrl,
+    businessImpact: String(data.get('businessImpact')).trim(),
     access: String(data.get('access')).trim(),
     data: String(data.get('data')).trim(),
     criticality: data.get('criticality'),
@@ -1141,6 +1296,29 @@ document.querySelector('#incident-list').addEventListener('click', event => {
 document.querySelectorAll('[data-close]').forEach(button => button.addEventListener('click', () => {
   document.querySelector(`#${button.dataset.close}`).close();
 }));
+document.querySelectorAll('dialog').forEach(dialog => {
+  dialog.addEventListener('close', () => {
+    if (activeDialogTrigger && typeof activeDialogTrigger.focus === 'function') {
+      activeDialogTrigger.focus();
+    }
+    activeDialogTrigger = null;
+  });
+  dialog.addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const focusable = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(element => !element.disabled && !element.hidden && element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+});
 document.querySelectorAll('[data-info]').forEach(button => button.addEventListener('click', () => {
   openInfoDialog(button.dataset.info, button.dataset.rule);
 }));
@@ -1154,6 +1332,12 @@ document.querySelector('#dispatch-form').addEventListener('submit', event => {
   if (!form.reportValidity()) return;
   const data = new FormData(form);
   const status = data.get('status');
+  const logoUrl = String(data.get('logoUrl') || '').trim();
+  if (logoUrl && !/^https:\/\/[^\s"'<>]+$/i.test(logoUrl)) {
+    showToast('Partner logo links must use HTTPS. Clear the field to use initials instead.');
+    form.elements.logoUrl.focus();
+    return;
+  }
   if (status === 'canceled' && !String(data.get('reason')).trim()) {
     showToast('Record the reason for cancellation before saving.');
     form.elements.reason.focus();
@@ -1169,6 +1353,7 @@ document.querySelector('#dispatch-form').addEventListener('submit', event => {
     id: editingId || createId('dispatch'),
     name: String(data.get('name')).trim(),
     customer: String(data.get('customer')).trim(),
+    logoUrl,
     cargo: String(data.get('cargo')).trim(),
     origin: String(data.get('origin')).trim(),
     destination: String(data.get('destination')).trim(),
@@ -1222,7 +1407,9 @@ document.querySelector('#incident-form').addEventListener('submit', event => {
 document.querySelectorAll('.filter-tab').forEach(button => button.addEventListener('click', () => {
   activeFilter = button.dataset.filter;
   document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.toggle('active', tab === button));
+  document.querySelectorAll('.filter-tab').forEach(tab => tab.setAttribute('aria-pressed', String(tab === button)));
   renderFindings(assess());
+  showToast(`${button.textContent.trim()} findings selected.`);
 }));
 document.querySelector('#asset-map-tab').addEventListener('click', () => {
   activeMap = 'assets';
@@ -1247,8 +1434,68 @@ function updateMapTabs() {
   assetTab.setAttribute('aria-selected', String(activeMap === 'assets'));
   networkTab.setAttribute('aria-selected', String(activeMap === 'network'));
   topologyTab.setAttribute('aria-selected', String(activeMap === 'topology'));
+  assetTab.tabIndex = activeMap === 'assets' ? 0 : -1;
+  networkTab.tabIndex = activeMap === 'network' ? 0 : -1;
+  topologyTab.tabIndex = activeMap === 'topology' ? 0 : -1;
   document.querySelector('#diagram').setAttribute('aria-label', activeMap === 'assets' ? 'Asset relationship diagram' : activeMap === 'network' ? 'Network zone diagram' : 'Full network topology diagram');
   renderDiagram();
 }
+
+function navigateToPage(page, updateHistory = true) {
+  const pageNames = ['home', 'inventory', 'risks', 'connections', 'operations'];
+  if (!pageNames.includes(page)) return;
+  const pageChanged = page !== activePage;
+  activePage = page;
+  document.querySelectorAll('[data-page-view]').forEach(view => {
+    view.hidden = view.dataset.pageView !== page;
+  });
+  document.querySelectorAll('.nav-link').forEach(button => {
+    const selected = button.dataset.page === page;
+    button.classList.toggle('active', selected);
+    if (selected) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+  document.title = `${page === 'home' ? 'Overview' : capitalize(page)} | AgriGuard Risk Planner`;
+  if (updateHistory && pageChanged) history.pushState(null, '', `#${page}`);
+  document.querySelector('#main-content').focus({ preventScroll: true });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('[data-page]').forEach(button => {
+  button.addEventListener('click', () => navigateToPage(button.dataset.page));
+});
+window.addEventListener('hashchange', () => navigateToPage(location.hash.slice(1), false));
+window.addEventListener('popstate', () => navigateToPage(location.hash.slice(1) || 'home', false));
+const initialPage = location.hash.slice(1);
+if (initialPage && document.querySelector(`[data-page-view="${initialPage}"]`)) {
+  navigateToPage(initialPage, false);
+} else {
+  navigateToPage('home', false);
+}
+
+document.querySelectorAll('.domain-tab').forEach(button => {
+  button.addEventListener('click', () => {
+    activeDomain = button.dataset.domain;
+    document.querySelectorAll('.domain-tab').forEach(tab => {
+      const selected = tab === button;
+      tab.classList.toggle('active', selected);
+      tab.setAttribute('aria-pressed', String(selected));
+    });
+    renderDiagram();
+    showToast(`${button.textContent.trim()} connection view selected.`);
+  });
+});
+
+document.querySelectorAll('.map-tab').forEach((tab, index, tabs) => {
+  tab.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 0
+      : event.key === 'End' ? tabs.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+    tabs[next].focus();
+    tabs[next].click();
+  });
+});
 
 render();
