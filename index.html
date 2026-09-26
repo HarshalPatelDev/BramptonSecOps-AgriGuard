@@ -16,6 +16,7 @@
       </a>
       <div class="topbar-right">
         <span class="local-badge"><span></span> Saved on this device</span>
+        <a class="button button-quiet" href="login.html">Sign in</a>
         <button class="button button-quiet" id="reset-demo" type="button">Reset demo</button>
       </div>
     </header>
@@ -23,10 +24,10 @@
     <main>
       <section class="hero">
         <div class="hero-copy">
-          <p class="eyebrow">CYBER + SUPPLY-CHAIN OPERATIONS</p>
-          <h1>Keep the fleet moving.<br><span>Know what to do next.</span></h1>
-          <p class="hero-description">Connect the systems, vendors, loads, and physical disruptions your transportation business depends on. Learn why each safeguard matters and track the recovery work.</p>
-          <a class="button button-light" href="#operations">Explore transport operations <span aria-hidden="true">↓</span></a>
+          <p class="eyebrow">FOOD SUPPLY-CHAIN OPERATIONS</p>
+          <h1>From fresh ingredients<br><span>to grocery shelves.</span></h1>
+          <p class="hero-description">Follow ingredients from supplier to receiving, cold storage, processing, and grocery delivery. Connect cyber safeguards to operational continuity and product value.</p>
+          <a class="button button-light" href="#operations">Explore the food supply chain <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-art" aria-hidden="true">
           <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
@@ -38,7 +39,7 @@
 
       <section class="notice" aria-label="Privacy and scope">
         <span class="notice-icon" aria-hidden="true">✓</span>
-        <p><strong>Demo data stays in this browser.</strong> No live truck tracking or system integrations. ETAs, incidents, and financial impact are entered by you; map links open Google Maps.</p>
+        <p><strong>Demo data stays in this browser.</strong> No live cold-chain sensors, dispatch, accounting, or system integrations. Product loss and financial values are illustrative records entered by you.</p>
         <span class="framework-chip">NIST CSF 2.0 aligned</span>
       </section>
 
@@ -68,9 +69,9 @@
       <section class="section-block operations-section" id="operations">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">02 / TRANSPORT OPERATIONS &amp; RESILIENCE</p>
-            <h2>What is moving, what could stop it?</h2>
-            <p class="section-description">Follow a load from dispatch to delivery, record redundancy and cancellation reasons, and track physical incidents alongside the operational work to resolve them.</p>
+            <p class="eyebrow">02 / INGREDIENT-TO-GROCERY OPERATIONS</p>
+            <h2>What is moving, where is it in the process?</h2>
+            <p class="section-description">Follow perishable ingredients through supplier pickup, receiving, cold storage, processing, and grocery delivery. Record ETAs, product value, spoilage, fallback capacity, and remediation.</p>
           </div>
           <div class="operations-heading-actions">
             <button class="button button-quiet" type="button" data-info="centralized">Central system design</button>
@@ -81,8 +82,8 @@
         <div class="operations-layout">
           <div class="operations-column">
             <div class="subsection-heading">
-              <div><h3>Dispatch &amp; delivery tasks</h3><p>Record cargo, route, planned/actual ETA, cancellation, and fallback plan.</p></div>
-              <button class="button button-dark" id="add-dispatch" type="button">＋ New dispatch</button>
+              <div><h3>Inbound, processing &amp; outbound tasks</h3><p>Record product, process stage, arrival, value, disruption, and fallback plan.</p></div>
+              <button class="button button-dark" id="add-dispatch" type="button">＋ Add shipment / batch</button>
             </div>
             <div class="dispatch-list" id="dispatch-list" aria-live="polite"></div>
           </div>
@@ -94,13 +95,36 @@
             <div class="incident-list" id="incident-list" aria-live="polite"></div>
           </aside>
         </div>
-        <div class="operations-footnote"><strong>Operational learning:</strong> A dispatch platform coordinates orders and status; maps assist with route planning; telematics may report vehicle location or condition; backup vehicles/carriers provide resilience. A cyber outage or inaccurate dispatch record can become a missed delivery, unsafe reroute, spoiled/damaged cargo, or service interruption. These sample records are manually reported, not live telemetry or safety advice.</div>
+        <div class="operations-footnote"><strong>Operational learning:</strong> Supplier and transport systems coordinate ingredient orders; receiving records lot and quantity; temperature-controlled storage protects perishable stock; processing converts inputs into batches; outbound dispatch delivers finished products to grocery stores. Incorrect lot, inventory, temperature, or dispatch data can cause spoilage, rework, delayed production, or missed deliveries. Demo records are illustrative, not live sensors or food-safety advice.</div>
+      </section>
+
+      <section class="section-block finance-section" id="finance">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / FINANCIAL IMPACT &amp; PRODUCT LOSS</p>
+            <h2>What disruption costs the operation</h2>
+            <p class="section-description">Connect reported product loss, salvage, disposal, recovery, and delay costs to the linked shipment or batch. Separate tracked product value from realized loss.</p>
+          </div>
+          <button class="button button-quiet" type="button" data-info="finance">How are these totals calculated? ⓘ</button>
+        </div>
+        <div class="finance-metrics" id="finance-metrics" aria-label="Supply-chain finance metrics"></div>
+        <div class="finance-grid">
+          <div class="finance-panel">
+            <div class="finance-panel-heading"><div><h3>Product value by process stage</h3><p>Open-record values by stage; linked goods may be counted at more than one stage.</p></div></div>
+            <div class="stage-chart" id="stage-chart"></div>
+          </div>
+          <div class="finance-panel loss-panel">
+            <div class="finance-panel-heading"><div><h3>Disruption cost breakdown</h3><p>Reported loss less salvage, plus added operating costs.</p></div></div>
+            <div class="loss-breakdown" id="loss-breakdown"></div>
+            <p class="finance-disclaimer">Illustrative management estimates only. Not accounting, insurance valuation, food-safety determination, or verified cyber-loss attribution.</p>
+          </div>
+        </div>
       </section>
 
       <section class="section-block risk-section" id="priorities">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">03 / PRIORITIZE CYBERSECURITY GAPS</p>
+            <p class="eyebrow">04 / PRIORITIZE CYBERSECURITY GAPS</p>
             <h2>Risk priorities</h2>
             <p class="section-description">See how missing safeguards could disrupt a business process, and why each practical action reduces that exposure. Scores are indicative, not a prediction of loss.</p>
           </div>
@@ -111,6 +135,7 @@
             <button class="filter-tab active" data-filter="all" type="button">All <span id="count-all">0</span></button>
             <button class="filter-tab" data-filter="high" type="button">High priority <span id="count-high">0</span></button>
             <button class="filter-tab" data-filter="medium" type="button">Medium <span id="count-medium">0</span></button>
+            <button class="filter-tab" data-filter="low" type="button">Low priority <span id="count-low">0</span></button>
           </div>
           <span class="sort-caption">Indicative: control gap + business criticality + exposure · High 75+ · Medium 52–74</span>
         </div>
@@ -120,17 +145,20 @@
       <section class="section-block map-section" id="maps">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">04 / SUPPLY CHAIN &amp; NETWORK TOPOLOGY</p>
+            <p class="eyebrow">05 / SUPPLY CHAIN &amp; NETWORK TOPOLOGY</p>
             <h2>How your operations connect</h2>
             <p class="section-description">Explore connected assets, network zones, internal nodes, vendors, and the business services they support. Add nodes and third parties to build this map around your operation.</p>
           </div>
-          <div class="map-heading-tools">
-            <div class="map-switch" role="tablist" aria-label="Diagram view">
-              <button class="map-tab active" id="asset-map-tab" role="tab" aria-selected="true" type="button">Asset graph</button>
-              <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" type="button">Network zones</button>
-              <button class="map-tab" id="topology-map-tab" role="tab" aria-selected="false" type="button">Full topology</button>
-            </div>
-            <button class="button button-dark" id="add-node" type="button">＋ Add node</button>
+        </div>
+        <div class="node-directory">
+          <div class="node-directory-heading"><div><h3>Network node inventory</h3><p>Click a node on the map or edit it here to update its zone, purpose, and dependencies.</p></div><button class="button button-dark" id="add-node" type="button">＋ Add node</button></div>
+          <div class="node-list" id="node-list" aria-live="polite"></div>
+        </div>
+        <div class="map-heading-tools">
+          <div class="map-switch" role="tablist" aria-label="Diagram view">
+            <button class="map-tab active" id="asset-map-tab" role="tab" aria-selected="true" type="button">Asset graph</button>
+            <button class="map-tab" id="network-map-tab" role="tab" aria-selected="false" type="button">Network zones</button>
+            <button class="map-tab" id="topology-map-tab" role="tab" aria-selected="false" type="button">Full topology</button>
           </div>
         </div>
         <div class="panel map-panel">
@@ -138,16 +166,12 @@
           <div class="diagram-wrap" id="diagram" role="tabpanel" aria-label="Asset relationship diagram"></div>
           <p class="map-footnote" id="map-footnote">Arrows indicate declared dependencies, not verified network traffic.</p>
         </div>
-        <div class="node-directory">
-          <div class="node-directory-heading"><div><h3>Network node inventory</h3><p>Click a node on the map or edit it here to update its zone, purpose, and dependencies.</p></div></div>
-          <div class="node-list" id="node-list" aria-live="polite"></div>
-        </div>
       </section>
 
       <section class="section-block vendor-section" id="vendors">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">05 / THIRD-PARTY DEPENDENCIES</p>
+            <p class="eyebrow">06 / THIRD-PARTY DEPENDENCIES</p>
             <h2>Vendors and business partners</h2>
             <p class="section-description">Record the service they provide, the network zone their connection lands in, what they access, and the assets or nodes that depend on them.</p>
           </div>
@@ -159,7 +183,7 @@
       <section class="section-block method-section" id="method">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">06 / PUT THE PLAN TO WORK</p>
+            <p class="eyebrow">07 / PUT THE PLAN TO WORK</p>
             <h2>From assessment to stronger controls</h2>
             <p class="section-description">Start with a useful inventory and build a repeatable security practice as your business grows.</p>
           </div>
@@ -175,7 +199,7 @@
     </main>
 
     <footer class="footer">
-      <span>AgriGuard Risk Planner <span class="footer-dot">·</span> Cyber resilience for transportation operations</span>
+      <span>AgriGuard Risk Planner <span class="footer-dot">·</span> Cyber resilience for food supply chains</span>
       <a href="README.md">How this MVP works</a>
     </footer>
 
@@ -275,14 +299,16 @@
         <div class="dialog-heading"><div><p class="eyebrow">TRANSPORT WORKFLOW</p><h2>New dispatch task</h2></div><button class="icon-button" type="button" data-close="dispatch-dialog" aria-label="Close dialog">×</button></div>
         <p class="dialog-intro">Record what is transported, the planned arrival, and the fallback if the assigned truck, route, or system is unavailable.</p>
         <div class="form-grid">
-          <label class="field">Load / task name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Produce delivery 1042"></label>
-          <label class="field">Customer or process<input name="customer" maxlength="70" placeholder="e.g. North depot replenishment"></label>
-          <label class="field field-full">What is being transported? <span class="required">*</span><input name="cargo" required maxlength="120" placeholder="e.g. 18 pallets of refrigerated produce"></label>
-          <label class="field">Origin <span class="required">*</span><input name="origin" required maxlength="100" placeholder="City, address, or facility"></label>
-          <label class="field">Destination <span class="required">*</span><input name="destination" required maxlength="100" placeholder="City, address, or facility"></label>
+          <label class="field">Shipment / batch name <span class="required">*</span><input name="name" required maxlength="70" placeholder="e.g. Spinach lot 26-104"></label>
+          <label class="field">Supplier / grocery customer<input name="customer" maxlength="70" placeholder="e.g. Green Acres Farm / North Grocery"></label>
+          <label class="field field-full">Ingredient or finished product <span class="required">*</span><input name="cargo" required maxlength="120" placeholder="e.g. 240 crates of romaine lettuce"></label>
+          <label class="field">Origin / process start <span class="required">*</span><input name="origin" required maxlength="100" placeholder="Farm, receiving dock, cold room"></label>
+          <label class="field">Destination / next stage <span class="required">*</span><input name="destination" required maxlength="100" placeholder="Processor, packaging line, grocery store"></label>
+          <label class="field">Supply-chain stage<select name="stage"><option value="supplier_pickup">Supplier pickup</option><option value="inbound">Inbound transport</option><option value="receiving">Receiving / quality check</option><option value="cold_storage">Cold storage</option><option value="processing">Processing / packaging</option><option value="outbound">Outbound transport</option><option value="grocery_delivery">Grocery delivery</option><option value="completed">Completed</option></select></label>
+          <label class="field">Tracked product value (CAD)<input name="productValue" type="number" min="0" step="0.01" placeholder="Estimated value of this load / batch"></label>
           <label class="field">Planned ETA <span class="required">*</span><input name="plannedEta" type="datetime-local" required></label>
-          <label class="field">Assigned truck / carrier<input name="vehicle" maxlength="60" placeholder="e.g. Truck 12 / Carrier A"></label>
-          <label class="field">Status<select name="status"><option value="scheduled">Scheduled</option><option value="in_transit">In transit</option><option value="delayed">Delayed</option><option value="delivered">Delivered</option><option value="canceled">Canceled</option></select></label>
+          <label class="field">Truck / carrier / production line<input name="vehicle" maxlength="60" placeholder="e.g. Reefer truck 12 / Line 2"></label>
+          <label class="field">Status<select name="status"><option value="scheduled">Scheduled</option><option value="in_transit">In transit</option><option value="processing">Processing</option><option value="delayed">Delayed</option><option value="delivered">Delivered / stage complete</option><option value="canceled">Canceled</option></select></label>
           <label class="field">Actual ETA / delivery time<input name="actualEta" type="datetime-local"></label>
           <label class="field">Observed/estimated delay (minutes)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Leave blank if unknown"></label>
           <label class="field field-full">Reason for cancellation or delay<textarea name="reason" maxlength="220" rows="2" placeholder="e.g. Vehicle breakdown; road closure; dispatch system unavailable"></textarea></label>
@@ -298,13 +324,17 @@
         <div class="dialog-heading"><div><p class="eyebrow">PHYSICAL CONSEQUENCE &amp; RESPONSE</p><h2>Log an operational issue</h2></div><button class="icon-button" type="button" data-close="incident-dialog" aria-label="Close dialog">×</button></div>
         <p class="dialog-intro">Record observed facts, consequence, and remediation status. Do not include sensitive personal or medical information. Use emergency procedures for immediate danger.</p>
         <div class="form-grid">
-          <label class="field">Issue type<select name="type"><option>Vehicle breakdown</option><option>Road / weather disruption</option><option>Cargo damage or spoilage</option><option>Facility / equipment outage</option><option>Cyber-related operations outage</option><option>Safety near miss</option><option>Other</option></select></label>
+          <label class="field">Issue type<select name="type"><option>Temperature excursion / spoilage</option><option>Ingredient contamination hold</option><option>Supplier disruption</option><option>Vehicle breakdown</option><option>Road / weather disruption</option><option>Processing line / cold-room outage</option><option>Packaging / labeling error</option><option>Cyber-related operations outage</option><option>Safety near miss</option><option>Other</option></select></label>
           <label class="field">Severity<select name="severity"><option value="low">Low — recovered with little impact</option><option value="medium">Medium — caused a service disruption</option><option value="high">High — major business or physical impact</option></select></label>
           <label class="field field-full">What happened? <span class="required">*</span><textarea name="description" required maxlength="240" rows="2" placeholder="Describe the operational event and affected process"></textarea></label>
           <label class="field">Related dispatch (optional)<select name="dispatchId" id="incident-dispatch"></select></label>
           <label class="field">Remediation status<select name="status"><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option></select></label>
           <label class="field">Delay impact (minutes, if known)<input name="delayMinutes" type="number" min="0" step="1" placeholder="Reported duration"></label>
-          <label class="field">Estimated direct impact (CAD, if known)<input name="estimatedCost" type="number" min="0" step="0.01" placeholder="Optional, estimate only"></label>
+          <label class="field">Gross product loss (CAD)<input name="productLoss" type="number" min="0" step="0.01" placeholder="Value written off / spoiled"></label>
+          <label class="field">Salvage / recovered value (CAD)<input name="salvageValue" type="number" min="0" step="0.01" placeholder="Recovered or reworked product value"></label>
+          <label class="field">Disposal / rework cost (CAD)<input name="disposalCost" type="number" min="0" step="0.01" placeholder="Additional direct cost"></label>
+          <label class="field">Delay / replacement cost (CAD)<input name="delayCost" type="number" min="0" step="0.01" placeholder="Expedite, replacement transport, penalties"></label>
+          <label class="field">Other direct cost (CAD)<input name="otherCost" type="number" min="0" step="0.01" placeholder="Optional additional cost"></label>
           <label class="field field-full">Remediation / prevention<textarea name="remediation" maxlength="240" rows="2" placeholder="Owner, repair, alternate carrier, route change, or prevention step"></textarea></label>
         </div>
         <div class="dialog-actions"><button class="button button-quiet" type="button" data-close="incident-dialog">Cancel</button><button class="button button-dark" type="submit">Save issue</button></div>
